@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquareOff } from 'lucide-react';
+import { PanelRightClose } from 'lucide-react';
 import { Quadro } from '@/components/kanban/quadro';
 import { PainelChat } from '@/components/chat/painel-chat';
 import { DetalhesCliente } from '@/components/chat/detalhes-cliente';
-import { NECESSIDADES, type Necessidade } from '@/lib/tipos';
+import { NECESSIDADES, type Atendimento, type Etapa, type Necessidade } from '@/lib/tipos';
 import { ATENDIMENTOS, conversaDoCliente } from '@/lib/dados-simulados';
 import { cn, formatarMoeda } from '@/lib/utils';
 
@@ -18,21 +18,32 @@ const FILTROS: { id: Necessidade | 'todas'; rotulo: string }[] = [
 ];
 
 const PaginaKanban = () => {
+  // Copia local porque nao ha banco ainda: mover um card altera este estado e
+  // some ao recarregar a pagina. Vira persistencia de verdade na v0.3.0.
+  const [atendimentos, setAtendimentos] = useState<Atendimento[]>(ATENDIMENTOS);
   const [necessidade, setNecessidade] = useState<Necessidade | 'todas'>('todas');
-  const [selecionado, setSelecionado] = useState<string | undefined>(ATENDIMENTOS[0].id);
-  const [detalhesAbertos, setDetalhesAbertos] = useState(true);
+  const [selecionado, setSelecionado] = useState<string | undefined>();
+  const [detalhesAbertos, setDetalhesAbertos] = useState(false);
+
+  const mover = (id: string, destino: Etapa) =>
+    setAtendimentos((atual) =>
+      atual.map((a) =>
+        a.id === id
+          ? { ...a, etapa: destino, atualizadoEm: new Date().toISOString() }
+          : a,
+      ),
+    );
 
   const visiveis =
     necessidade === 'todas'
-      ? ATENDIMENTOS
-      : ATENDIMENTOS.filter((a) => a.necessidade === necessidade);
+      ? atendimentos
+      : atendimentos.filter((a) => a.necessidade === necessidade);
 
   const atendimento = visiveis.find((a) => a.id === selecionado);
   const conversa = atendimento ? conversaDoCliente(atendimento.clienteId) : undefined;
+  const painelAberto = Boolean(atendimento && conversa);
 
-  const emAberto = visiveis.filter(
-    (a) => a.etapa !== 'finalizado' && a.etapa !== 'perdido',
-  );
+  const emAberto = visiveis.filter((a) => a.etapa !== 'finalizado' && a.etapa !== 'perdido');
   const valorEmAberto = emAberto.reduce((soma, a) => soma + (a.valor ?? 0), 0);
 
   return (
@@ -64,6 +75,21 @@ const PaginaKanban = () => {
                 {filtro.rotulo}
               </button>
             ))}
+
+            {painelAberto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelecionado(undefined);
+                  setDetalhesAbertos(false);
+                }}
+                title="Fechar conversa e usar o quadro inteiro"
+                className="ml-1 flex items-center gap-1.5 rounded-lg border border-borda bg-superficie px-2.5 py-1.5 text-[13px] text-texto-suave transition-colors hover:text-texto"
+              >
+                <PanelRightClose size={14} />
+                Fechar conversa
+              </button>
+            )}
           </div>
         </header>
 
@@ -72,12 +98,13 @@ const PaginaKanban = () => {
           necessidade={necessidade === 'todas' ? undefined : necessidade}
           selecionado={selecionado}
           aoSelecionar={setSelecionado}
+          aoMover={mover}
         />
       </div>
 
-      {atendimento && conversa ? (
+      {painelAberto && atendimento && conversa && (
         <>
-          <div className="flex w-[24rem] shrink-0 border-l border-borda">
+          <div className="flex w-[22rem] shrink-0 border-l border-borda">
             <PainelChat
               conversa={conversa}
               detalhesAbertos={detalhesAbertos}
@@ -86,13 +113,6 @@ const PaginaKanban = () => {
           </div>
           {detalhesAbertos && <DetalhesCliente clienteId={atendimento.clienteId} />}
         </>
-      ) : (
-        <aside className="flex w-[24rem] shrink-0 flex-col items-center justify-center gap-2 border-l border-borda bg-superficie px-8 text-center">
-          <MessageSquareOff size={22} className="text-texto-fraco" />
-          <p className="text-[13px] text-texto-suave">
-            Selecione um card para ver a conversa
-          </p>
-        </aside>
       )}
     </div>
   );

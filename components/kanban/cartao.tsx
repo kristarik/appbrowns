@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CalendarDays, MessageCircle } from 'lucide-react';
+import { AlertTriangle, CalendarDays, GripVertical, MessageCircle } from 'lucide-react';
 import { CANAIS, NECESSIDADES, OCASIOES, type Atendimento } from '@/lib/tipos';
 import { camposPendentes } from '@/lib/funil';
 import { cliente, conversaDoCliente } from '@/lib/dados-simulados';
@@ -9,10 +9,20 @@ import { cn, diasAte, formatarMoeda, iniciais } from '@/lib/utils';
 type Props = {
   atendimento: Atendimento;
   ativo: boolean;
+  arrastando: boolean;
   aoSelecionar: () => void;
+  aoIniciarArraste: () => void;
+  aoTerminarArraste: () => void;
 };
 
-export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
+export const Cartao = ({
+  atendimento,
+  ativo,
+  arrastando,
+  aoSelecionar,
+  aoIniciarArraste,
+  aoTerminarArraste,
+}: Props) => {
   const dados = cliente(atendimento.clienteId);
   const conversa = conversaDoCliente(atendimento.clienteId);
 
@@ -24,17 +34,37 @@ export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
   const proximo = dias !== undefined && dias > 7 && dias <= 21;
 
   return (
-    <button
-      type="button"
+    <div
+      draggable
+      onDragStart={(evento) => {
+        evento.dataTransfer.setData('text/plain', atendimento.id);
+        evento.dataTransfer.effectAllowed = 'move';
+        aoIniciarArraste();
+      }}
+      onDragEnd={aoTerminarArraste}
       onClick={aoSelecionar}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(evento) => {
+        if (evento.key === 'Enter' || evento.key === ' ') {
+          evento.preventDefault();
+          aoSelecionar();
+        }
+      }}
       className={cn(
-        'w-full rounded-xl border bg-superficie p-3 text-left transition-all',
+        'group cursor-grab rounded-xl border bg-superficie p-3 text-left transition-all active:cursor-grabbing',
+        arrastando && 'opacity-40',
         ativo
           ? 'border-marca ring-2 ring-marca/15'
           : 'border-borda hover:border-texto-fraco/40 hover:shadow-sm',
       )}
     >
       <div className="flex items-start gap-2">
+        <GripVertical
+          size={14}
+          className="mt-1 -ml-1 shrink-0 text-transparent transition-colors group-hover:text-texto-fraco"
+        />
+
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marca-fraca text-[10px] font-semibold text-marca">
           {iniciais(dados.nome)}
         </span>
@@ -98,6 +128,6 @@ export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
           <p className="truncate text-[11px] text-texto-fraco">{conversa.ultimaMensagem}</p>
         </div>
       )}
-    </button>
+    </div>
   );
 };

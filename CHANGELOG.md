@@ -1,5 +1,38 @@
 # Histórico de versões
 
+## v0.2.1 - Kanban utilizável
+
+Correção de dois problemas que deixavam o quadro inutilizável.
+
+### Quadro espremido
+
+O painel de chat e o de detalhes ocupavam 704px dos 944px disponíveis, sobrando
+240px para as nove colunas. Na prática dava para ver uma coluna e meia.
+
+O que mudou:
+
+- Nenhum card vem selecionado ao abrir, então o quadro usa a largura toda
+- O painel de detalhes não abre mais sozinho no kanban
+- Botão "Fechar conversa" devolve o quadro inteiro a qualquer momento
+- Colunas de 288px para 256px, cabe mais coisa na tela
+
+### Arrastar cards
+
+Agora funciona. Segura o card e solta na coluna destino. A coluna alvo fica
+destacada em azul durante o arraste, e a alça de arraste aparece ao passar o
+mouse sobre o card.
+
+Ao mudar de etapa, o checklist e os avisos de pendência recalculam sozinhos.
+
+Importante: como ainda não existe banco, mover um card só vale até recarregar a
+página. Persistência de verdade entra na v0.3.0.
+
+### Correções menores
+
+- Componente declarado dentro do render na barra de ícones, que zerava estado a
+  cada renderização
+- Concordância: "1 atrasada" e "em 1 dia" no lugar de "1 atrasadas" e "em 1 dias"
+
 ## v0.2.0 - Funil real
 
 Substitui o funil inventado pelo funil de verdade da loja, a partir da tabela de
