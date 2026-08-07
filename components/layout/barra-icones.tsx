@@ -31,6 +31,13 @@ export const BarraIcones = () => {
         )}
       >
         <Icone size={20} strokeWidth={ativo ? 2.2 : 1.8} />
+
+        {item.distintivo !== undefined && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-marca px-1 text-[9px] font-semibold text-white tabular-nums">
+            {item.distintivo}
+          </span>
+        )}
+
         <span className="pointer-events-none absolute left-full z-50 ml-3 hidden whitespace-nowrap rounded-md bg-texto px-2 py-1 text-xs font-medium text-white group-hover:block">
           {item.rotulo}
         </span>

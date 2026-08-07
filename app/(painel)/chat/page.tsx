@@ -26,7 +26,7 @@ const PaginaChat = () => {
         aoAlternarDetalhes={() => setDetalhesAbertos((aberto) => !aberto)}
       />
 
-      {detalhesAbertos && <DetalhesCliente conversa={conversa} />}
+      {detalhesAbertos && <DetalhesCliente clienteId={conversa.clienteId} />}
     </div>
   );
 };

@@ -1,19 +1,21 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { ETAPAS, type Atendimento } from '@/lib/tipos';
+import type { Atendimento, Necessidade } from '@/lib/tipos';
+import { etapasDaNecessidade } from '@/lib/funil';
 import { formatarMoeda } from '@/lib/utils';
 import { Cartao } from './cartao';
 
 type Props = {
   atendimentos: Atendimento[];
+  necessidade?: Necessidade;
   selecionado?: string;
   aoSelecionar: (id: string) => void;
 };
 
-export const Quadro = ({ atendimentos, selecionado, aoSelecionar }: Props) => (
+export const Quadro = ({ atendimentos, necessidade, selecionado, aoSelecionar }: Props) => (
   <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto px-4 pb-4">
-    {ETAPAS.map((etapa) => {
+    {etapasDaNecessidade(necessidade).map((etapa) => {
       const daEtapa = atendimentos.filter((a) => a.etapa === etapa.id);
       const total = daEtapa.reduce((soma, a) => soma + (a.valor ?? 0), 0);
 
@@ -24,7 +26,7 @@ export const Quadro = ({ atendimentos, selecionado, aoSelecionar }: Props) => (
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: etapa.cor }}
             />
-            <h3 className="text-[13px] font-semibold tracking-tight text-texto">
+            <h3 className="truncate text-[13px] font-semibold tracking-tight text-texto">
               {etapa.nome}
             </h3>
             <span className="rounded bg-borda-suave px-1.5 text-[11px] font-medium text-texto-suave tabular-nums">
@@ -32,7 +34,7 @@ export const Quadro = ({ atendimentos, selecionado, aoSelecionar }: Props) => (
             </span>
 
             {total > 0 && (
-              <span className="ml-auto text-[11px] text-texto-fraco tabular-nums">
+              <span className="ml-auto shrink-0 text-[11px] text-texto-fraco tabular-nums">
                 {formatarMoeda(total)}
               </span>
             )}

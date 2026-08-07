@@ -106,7 +106,11 @@ export const Sidebar = ({ recolhida, aoAlternar }: SidebarProps) => {
                         <span
                           className={cn(
                             'shrink-0 text-[11px] font-medium tabular-nums',
-                            ativo ? 'text-marca' : 'text-texto-fraco',
+                            item.alerta
+                              ? 'rounded bg-alerta-fraco px-1 text-alerta'
+                              : ativo
+                                ? 'text-marca'
+                                : 'text-texto-fraco',
                           )}
                         >
                           {item.contador}

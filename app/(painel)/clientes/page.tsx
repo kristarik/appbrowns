@@ -2,9 +2,20 @@
 
 import { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
-import { ETAPAS, NECESSIDADES, TIPOS_EVENTO } from '@/lib/tipos';
+import { NECESSIDADES, OCASIOES, ORIGENS } from '@/lib/tipos';
+import { etapa as definicaoEtapa } from '@/lib/funil';
 import { atendimentoDoCliente, CLIENTES } from '@/lib/dados-simulados';
 import { cn, diasAte, formatarData, formatarTelefone, iniciais } from '@/lib/utils';
+
+const COLUNAS = [
+  'Cliente',
+  'Telefone',
+  'Origem',
+  'Interesse',
+  'Ocasião',
+  'Data do evento',
+  'Etapa',
+];
 
 const PaginaClientes = () => {
   const [busca, setBusca] = useState('');
@@ -46,42 +57,44 @@ const PaginaClientes = () => {
         <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-borda bg-superficie">
           <thead>
             <tr className="bg-fundo">
-              {['Cliente', 'Telefone', 'Necessidade', 'Evento', 'Data do evento', 'Etapa'].map(
-                (coluna) => (
-                  <th
-                    key={coluna}
-                    className="border-b border-borda px-4 py-2.5 text-left text-[11px] font-semibold tracking-wide text-texto-fraco uppercase"
-                  >
-                    {coluna}
-                  </th>
-                ),
-              )}
+              {COLUNAS.map((coluna) => (
+                <th
+                  key={coluna}
+                  className="border-b border-borda px-4 py-2.5 text-left text-[11px] font-semibold tracking-wide text-texto-fraco uppercase"
+                >
+                  {coluna}
+                </th>
+              ))}
             </tr>
           </thead>
 
           <tbody>
-            {filtrados.map((cliente) => {
-              const atendimento = atendimentoDoCliente(cliente.id);
-              const etapa = ETAPAS.find((e) => e.id === atendimento?.etapa);
+            {filtrados.map((registro) => {
+              const atendimento = atendimentoDoCliente(registro.id);
+              const etapa = atendimento ? definicaoEtapa(atendimento.etapa) : undefined;
               const dias = atendimento?.dataEvento
                 ? diasAte(atendimento.dataEvento)
                 : undefined;
 
               return (
-                <tr key={cliente.id} className="group transition-colors hover:bg-fundo">
+                <tr key={registro.id} className="transition-colors hover:bg-fundo">
                   <td className="border-b border-borda-suave px-4 py-2.5">
                     <div className="flex items-center gap-2.5">
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marca-fraca text-[10px] font-semibold text-marca">
-                        {iniciais(cliente.nome)}
+                        {iniciais(registro.nome)}
                       </span>
                       <span className="text-[13px] font-medium text-texto">
-                        {cliente.nome}
+                        {registro.nome}
                       </span>
                     </div>
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave tabular-nums">
-                    {formatarTelefone(cliente.telefone)}
+                    {formatarTelefone(registro.telefone)}
+                  </td>
+
+                  <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave">
+                    {atendimento ? ORIGENS[atendimento.origem] : '—'}
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave">
@@ -89,7 +102,7 @@ const PaginaClientes = () => {
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave">
-                    {atendimento?.tipoEvento ? TIPOS_EVENTO[atendimento.tipoEvento] : '—'}
+                    {atendimento?.ocasiao ? OCASIOES[atendimento.ocasiao] : '—'}
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px]">

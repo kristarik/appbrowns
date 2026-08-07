@@ -1,3 +1,3 @@
-export const VERSAO = '0.1.0';
+export const VERSAO = '0.2.0';
 
-export const VERSAO_NOME = 'Fundação';
+export const VERSAO_NOME = 'Funil real';

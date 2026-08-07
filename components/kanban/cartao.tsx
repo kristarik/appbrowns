@@ -1,8 +1,9 @@
 'use client';
 
-import { CalendarDays, MessageCircle } from 'lucide-react';
-import { CANAIS, NECESSIDADES, TIPOS_EVENTO, type Atendimento } from '@/lib/tipos';
-import { cliente, CONVERSAS } from '@/lib/dados-simulados';
+import { AlertTriangle, CalendarDays, MessageCircle } from 'lucide-react';
+import { CANAIS, NECESSIDADES, OCASIOES, type Atendimento } from '@/lib/tipos';
+import { camposPendentes } from '@/lib/funil';
+import { cliente, conversaDoCliente } from '@/lib/dados-simulados';
 import { cn, diasAte, formatarMoeda, iniciais } from '@/lib/utils';
 
 type Props = {
@@ -13,10 +14,11 @@ type Props = {
 
 export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
   const dados = cliente(atendimento.clienteId);
-  const conversa = CONVERSAS.find((c) => c.clienteId === atendimento.clienteId);
+  const conversa = conversaDoCliente(atendimento.clienteId);
 
   if (!dados) return null;
 
+  const pendentes = camposPendentes(atendimento.etapa, atendimento.dados);
   const dias = atendimento.dataEvento ? diasAte(atendimento.dataEvento) : undefined;
   const urgente = dias !== undefined && dias >= 0 && dias <= 7;
   const proximo = dias !== undefined && dias > 7 && dias <= 21;
@@ -41,7 +43,7 @@ export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
           <p className="truncate text-[13px] font-medium text-texto">{dados.nome}</p>
           <p className="truncate text-[11px] text-texto-fraco">
             {NECESSIDADES[atendimento.necessidade]}
-            {atendimento.tipoEvento && ` · ${TIPOS_EVENTO[atendimento.tipoEvento]}`}
+            {atendimento.ocasiao && ` · ${OCASIOES[atendimento.ocasiao]}`}
           </p>
         </div>
 
@@ -53,7 +55,7 @@ export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
         )}
       </div>
 
-      <div className="mt-2.5 flex items-center justify-between gap-2">
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         {dias !== undefined && (
           <span
             className={cn(
@@ -70,8 +72,18 @@ export const Cartao = ({ atendimento, ativo, aoSelecionar }: Props) => {
           </span>
         )}
 
+        {pendentes.length > 0 && (
+          <span
+            className="flex items-center gap-1 rounded-md bg-alerta-fraco px-1.5 py-0.5 text-[11px] font-medium text-alerta"
+            title={`Faltam: ${pendentes.map((c) => c.rotulo).join(', ')}`}
+          >
+            <AlertTriangle size={11} />
+            {pendentes.length} pendente{pendentes.length > 1 ? 's' : ''}
+          </span>
+        )}
+
         {atendimento.valor && (
-          <span className="text-[12px] font-semibold text-texto tabular-nums">
+          <span className="ml-auto text-[12px] font-semibold text-texto tabular-nums">
             {formatarMoeda(atendimento.valor)}
           </span>
         )}

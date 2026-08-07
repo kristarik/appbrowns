@@ -4,7 +4,7 @@ export type Necessidade =
   | 'camisa-sob-medida'
   | 'ajuste';
 
-export type TipoEvento =
+export type Ocasiao =
   | 'casamento'
   | 'formatura'
   | 'corporativo'
@@ -12,15 +12,49 @@ export type TipoEvento =
   | 'outro';
 
 export type Etapa =
-  | 'novo-contato'
-  | 'em-atendimento'
-  | 'orcamento-enviado'
-  | 'aguardando-prova'
-  | 'em-producao'
+  | 'novo'
+  | 'atendimento-inicial'
+  | 'agendado'
+  | 'decidindo'
+  | 'aguardando-retirada'
+  | 'em-provas'
+  | 'em-locacao'
   | 'finalizado'
   | 'perdido';
 
-export type Canal = 'whatsapp' | 'instagram' | 'manual';
+export type Canal = 'whatsapp' | 'instagram' | 'telefone';
+
+export type OrigemLead =
+  | 'google-ads'
+  | 'instagram'
+  | 'facebook'
+  | 'indicacao'
+  | 'passou-na-loja'
+  | 'site'
+  | 'outro';
+
+export type MotivoPerda =
+  | 'preco'
+  | 'estoque'
+  | 'prazo'
+  | 'concorrencia'
+  | 'sem-retorno';
+
+export type TipoCampo =
+  | 'texto'
+  | 'texto-longo'
+  | 'data'
+  | 'data-hora'
+  | 'opcao'
+  | 'booleano'
+  | 'moeda';
+
+export type CampoEtapa = {
+  id: string;
+  rotulo: string;
+  tipo: TipoCampo;
+  opcoes?: { id: string; rotulo: string }[];
+};
 
 export type Cliente = {
   id: string;
@@ -31,17 +65,35 @@ export type Cliente = {
   criadoEm: string;
 };
 
+// Os campos do checklist variam por etapa, entao ficam num mapa aberto em vez
+// de colunas fixas. A definicao de quais existem vive em lib/funil.ts.
+export type DadosEtapa = Record<string, string | number | boolean | undefined>;
+
 export type Atendimento = {
   id: string;
   clienteId: string;
+  origem: OrigemLead;
+  canal: Canal;
   necessidade: Necessidade;
+  ocasiao?: Ocasiao;
   dataEvento?: string;
-  tipoEvento?: TipoEvento;
+  interesseInicial?: string;
   etapa: Etapa;
   valor?: number;
   responsavel: string;
-  motivoPerda?: string;
+  motivoPerda?: MotivoPerda;
+  dados: DadosEtapa;
   atualizadoEm: string;
+};
+
+export type Tarefa = {
+  id: string;
+  atendimentoId: string;
+  titulo: string;
+  etapaOrigem: Etapa;
+  venceEm: string;
+  concluida: boolean;
+  responsavel: string;
 };
 
 export type Mensagem = {
@@ -71,7 +123,7 @@ export const NECESSIDADES: Record<Necessidade, string> = {
   ajuste: 'Ajuste / conserto',
 };
 
-export const TIPOS_EVENTO: Record<TipoEvento, string> = {
+export const OCASIOES: Record<Ocasiao, string> = {
   casamento: 'Casamento',
   formatura: 'Formatura',
   corporativo: 'Corporativo',
@@ -79,18 +131,26 @@ export const TIPOS_EVENTO: Record<TipoEvento, string> = {
   outro: 'Outro',
 };
 
-export const ETAPAS: { id: Etapa; nome: string; cor: string }[] = [
-  { id: 'novo-contato', nome: 'Novo contato', cor: '#1b6df0' },
-  { id: 'em-atendimento', nome: 'Em atendimento', cor: '#7c3aed' },
-  { id: 'orcamento-enviado', nome: 'Orçamento enviado', cor: '#ea8c00' },
-  { id: 'aguardando-prova', nome: 'Aguardando prova', cor: '#0891b2' },
-  { id: 'em-producao', nome: 'Em produção', cor: '#c026d3' },
-  { id: 'finalizado', nome: 'Finalizado', cor: '#16a34a' },
-  { id: 'perdido', nome: 'Perdido', cor: '#94a3b8' },
-];
-
 export const CANAIS: Record<Canal, { nome: string; cor: string }> = {
   whatsapp: { nome: 'WhatsApp', cor: '#25d366' },
   instagram: { nome: 'Instagram', cor: '#e1306c' },
-  manual: { nome: 'Manual', cor: '#8b96a8' },
+  telefone: { nome: 'Telefone', cor: '#8b96a8' },
+};
+
+export const ORIGENS: Record<OrigemLead, string> = {
+  'google-ads': 'Google Ads',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  indicacao: 'Indicação',
+  'passou-na-loja': 'Passou na loja',
+  site: 'Site',
+  outro: 'Outro',
+};
+
+export const MOTIVOS_PERDA: Record<MotivoPerda, string> = {
+  preco: 'Preço',
+  estoque: 'Estoque',
+  prazo: 'Prazo',
+  concorrencia: 'Concorrência',
+  'sem-retorno': 'Sem retorno',
 };

@@ -1,5 +1,43 @@
 # Histórico de versões
 
+## v0.2.0 - Funil real
+
+Substitui o funil inventado pelo funil de verdade da loja, a partir da tabela de
+status enviada pelo time. Continua com dados simulados.
+
+### Etapas
+
+As sete etapas chutadas viraram as nove reais: Novo, Atendimento inicial,
+Agendado, Decidindo, Aguardando retirada, Em provas e ajustes, Em locação,
+Finalizado, Perdido.
+
+Aluguel e sob medida seguem caminhos diferentes. Ao filtrar por interesse, as
+colunas que não se aplicam somem do quadro: aluguel não passa por provas, sob
+medida nunca entra em locação.
+
+### Checklist por etapa
+
+Cada etapa exige campos próprios, definidos em `lib/funil.ts`. O card mostra
+quantos faltam e o painel lateral lista item por item.
+
+Avisa mas não bloqueia: a atendente costuma estar com o cliente na frente.
+
+### Follow-ups
+
+Tela nova. Cada etapa define seus follow-ups, que viram tarefas com prazo. As
+atrasadas aparecem destacadas. Sem disparo automático de mensagem.
+
+### Campos novos
+
+Origem do lead, canal de entrada, ocasião (antes chamada de tipo de evento) e
+interesse inicial. Origem do lead é o que vai ligar o investimento em anúncio ao
+faturamento no relatório de marketing.
+
+### Relatórios
+
+Separados em Comercial e Marketing, com o escopo de cada um documentado na tela.
+Ainda não construídos.
+
 ## v0.1.0 - Fundação
 
 Primeira versão navegável. Todo o conteúdo vem de dados simulados em

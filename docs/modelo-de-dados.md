@@ -1,89 +1,130 @@
 # Modelo de dados
 
-Rascunho da modelagem, a partir do que voce descreveu. Serve de referencia antes
-de virar schema Prisma. Se algo aqui nao bate com a operacao da loja, e melhor
-corrigir agora do que depois de ter dados dentro.
+Modelagem baseada na tabela de status enviada pela loja. Vira schema Prisma na
+v0.3.0. A definição executável do funil está em `lib/funil.ts`.
 
 ## Cliente
 
-| Campo | Tipo | Origem |
-|---|---|---|
-| nome | texto | atendente digita ou vem do perfil do WhatsApp |
-| telefone | texto | automatico, vem do WhatsApp |
-| email | texto | opcional |
-| observacoes | texto longo | livre |
-| criadoEm | data | automatico |
+| Campo | Tipo |
+|---|---|
+| nome | texto |
+| telefone | texto, formato E.164 |
+| email | texto, opcional |
+| observacoes | texto longo |
+| criadoEm | data |
 
-Telefone e a chave que liga a conversa do WhatsApp ao cliente. Guardar sempre
-normalizado em formato E.164 (5511999999999), sem parenteses ou tracos, senao o
-mesmo cliente vira dois registros.
+Telefone é a chave que liga a conversa do WhatsApp ao cliente. Sempre
+normalizado como 5511999999999, sem parênteses ou traços, senão o mesmo cliente
+vira dois registros.
 
 ## Atendimento
 
-Um cliente pode voltar varias vezes: alugou um terno em marco, faz um sob medida
-em outubro. Cada passagem pelo funil e um atendimento separado, com seus proprios
-dados de evento. Sem isso o historico se perde a cada nova venda.
+Um cliente pode voltar várias vezes: aluga um terno em março, faz um sob medida
+em outubro. Cada passagem pelo funil é um atendimento separado. Sem isso o
+histórico se perde a cada nova venda.
 
-| Campo | Tipo | Observacao |
+| Campo | Tipo | Observação |
 |---|---|---|
-| clienteId | relacao | dono do atendimento |
-| necessidade | opcao | aluguel, terno sob medida, camisa sob medida, ajuste |
-| dataEvento | data | quando o cliente precisa da peca pronta |
-| tipoEvento | opcao | casamento, formatura, corporativo, outro |
-| etapa | opcao | posicao no kanban |
-| valor | decimal | opcional, alimenta o relatorio de faturamento |
-| responsavel | relacao | atendente que cuida |
-| motivoPerda | texto | preenchido so quando etapa = perdido |
+| clienteId | relação | |
+| origem | opção | Google Ads, Instagram, Facebook, indicação, passou na loja, site, outro |
+| canal | opção | WhatsApp, Instagram, telefone |
+| necessidade | opção | aluguel, terno sob medida, camisa sob medida, ajuste |
+| ocasiao | opção | casamento, formatura, corporativo, aniversário, outro |
+| dataEvento | data | define a urgência |
+| interesseInicial | texto | o que o cliente pediu na primeira conversa |
+| etapa | opção | as nove do funil |
+| valor | decimal | |
+| responsavel | relação | |
+| dados | mapa aberto | checklist da etapa, ver abaixo |
 
-A data do evento merece atencao: e ela que define a urgencia real. Uma peca sob
-medida para daqui a 15 dias e mais urgente que um aluguel para daqui a 3 meses,
-mesmo tendo entrado depois. Vale destacar visualmente no card do kanban.
+**Origem do lead é o campo mais importante para o marketing.** É o que permite
+cruzar investimento em anúncio com faturamento. Se ficar vazio, o relatório de
+marketing mostra visitas no site e nada mais.
 
-## Etapas do kanban
+## Checklist por etapa
 
-Proposta inicial, baseada em como costuma funcionar uma alfaiataria:
+Cada etapa exige campos próprios. Como variam por etapa, ficam num mapa aberto
+(`dados`) em vez de colunas fixas. A definição de quais campos existem em cada
+etapa vive em `lib/funil.ts`.
 
-1. Novo contato
-2. Em atendimento
-3. Orcamento enviado
-4. Aguardando prova
-5. Em producao
-6. Finalizado
-7. Perdido
+O checklist **avisa mas não bloqueia**: a atendente costuma estar com o cliente
+na frente e nem sempre dá para preencher tudo na hora. O card mostra quantos
+campos faltam.
 
-As duas ultimas sao estados finais. "Perdido" sai do fluxo mas continua no
-relatorio, para voce medir onde os clientes desistem.
+| Etapa | Campos exigidos |
+|---|---|
+| Novo | nenhum, os dados básicos já vêm do cadastro |
+| Atendimento inicial | nenhum |
+| Agendado | data e horário da visita, consultor, confirmação de presença, observações, origem do agendamento |
+| Decidindo | data da visita, produtos experimentados, orçamento apresentado, objeção principal, próxima data de contato |
+| Aguardando retirada | venda confirmada, data da retirada, horário |
+| Em provas e ajustes | próxima prova, data prevista de liberação |
+| Em locação | data da retirada, previsão de devolução, observações |
+| Finalizado | cliente satisfeito, avaliação recebida, foto autorizada |
+| Perdido | motivo: preço, estoque, prazo, concorrência, sem retorno |
 
-Isso e um chute educado. Voce conhece a operacao e vai querer ajustar.
+## Fluxos diferentes
+
+Aluguel e sob medida não passam pelas mesmas etapas:
+
+- **Em provas e ajustes** só vale para terno sob medida, camisa sob medida e ajuste
+- **Em locação** só vale para aluguel
+
+O quadro é único, mas ao filtrar por interesse as colunas que não se aplicam
+somem. Evita cards pulando colunas vazias.
+
+## Tarefa (follow-up)
+
+Cada etapa define seus follow-ups. Ao entrar na etapa, o sistema cria as tarefas
+com prazo. Elas aparecem na tela de Follow-ups, e a atendente decide o que
+mandar. Não há disparo automático de mensagem por enquanto.
+
+| Campo | Tipo |
+|---|---|
+| atendimentoId | relação |
+| titulo | texto |
+| etapaOrigem | opção |
+| venceEm | data e hora |
+| concluida | booleano |
+| responsavel | relação |
 
 ## Conversa e mensagem
 
 | Conversa | |
 |---|---|
-| clienteId | relacao |
-| canal | whatsapp, instagram, manual |
+| clienteId | relação |
+| canal | whatsapp, instagram, telefone |
 | status | aberta, resolvida |
 | naoLidas | contador |
 | ultimaMensagemEm | data |
 
 | Mensagem | |
 |---|---|
-| conversaId | relacao |
+| conversaId | relação |
 | direcao | recebida, enviada |
 | conteudo | texto |
 | autor | cliente, atendente, sistema |
 | enviadaEm | data |
-| idExterno | id da mensagem na Meta, evita duplicar no webhook |
+| idExterno | id na Meta, evita duplicar no webhook |
 
-## Usuario
+## Usuário
 
-Login do painel: nome, email, senha (hash), papel (admin ou atendente).
+Nome, email, senha (hash), papel (admin ou atendente).
 
-## Relatorios que o modelo permite
+## Relatórios que o modelo permite
 
-- Atendimentos por necessidade, para saber o que mais sai
-- Taxa de conversao por etapa, para achar onde trava
+**Comercial**, direto do funil:
+
+- Conversão entre as nove etapas
+- Atendimentos por interesse
 - Motivos de perda
-- Volume por tipo de evento e sazonalidade (formatura e casamento tem picos)
+- Sazonalidade por ocasião
 - Desempenho por atendente
-- Faturamento por periodo
+- Faturamento por período
+
+**Marketing**, exige Google Analytics e Google Ads conectados:
+
+- Origem dos leads cruzada com faturamento
+- Custo por lead e por venda
+- Acessos ao site e origem do tráfego
+- Campanhas que trazem lead mas não venda
