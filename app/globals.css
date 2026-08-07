@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --fundo: #f4f6fa;
+  --superficie: #ffffff;
+  --borda: #e4e8f0;
+  --borda-suave: #eef1f6;
+
+  --texto: #1b2330;
+  --texto-suave: #5c6879;
+  --texto-fraco: #8b96a8;
+
+  --marca: #1b6df0;
+  --marca-escura: #1557c4;
+  --marca-fraca: #e8f0fe;
+
+  --sucesso: #16a34a;
+  --sucesso-fraco: #e7f7ed;
+  --alerta: #ea8c00;
+  --alerta-fraco: #fdf2e0;
+  --perigo: #dc2626;
+  --perigo-fraco: #fdeaea;
+
+  --rail: 4rem;
+  --sidebar: 17rem;
+  --sidebar-recolhida: 4.5rem;
+}
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-borda: var(--borda);
+  --color-borda-suave: var(--borda-suave);
+
+  --color-texto: var(--texto);
+  --color-texto-suave: var(--texto-suave);
+  --color-texto-fraco: var(--texto-fraco);
+
+  --color-marca: var(--marca);
+  --color-marca-escura: var(--marca-escura);
+  --color-marca-fraca: var(--marca-fraca);
+
+  --color-sucesso: var(--sucesso);
+  --color-sucesso-fraco: var(--sucesso-fraco);
+  --color-alerta: var(--alerta);
+  --color-alerta-fraco: var(--alerta-fraco);
+  --color-perigo: var(--perigo);
+  --color-perigo-fraco: var(--perigo-fraco);
+
+  --font-sans: var(--font-geist-sans);
+}
+
+* {
+  border-color: var(--borda);
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d3dae5;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b9c3d2;
+  background-clip: content-box;
+}
