@@ -13,6 +13,12 @@ export type Sessao = {
   papel: Papel;
 };
 
+// Amarrado ao protocolo, nao ao ambiente. Um cookie Secure so trafega em HTTPS:
+// marcando por NODE_ENV, a producao servida em http:// gravava um cookie que o
+// navegador descartava, e o usuario voltava para o login a cada clique.
+// Quando o painel ganhar dominio com HTTPS, basta SERVER_URL comecar com https.
+const cookieSeguro = () => (process.env.SERVER_URL ?? '').startsWith('https://');
+
 const segredo = () => {
   const valor = process.env.AUTH_SECRET;
 
@@ -35,7 +41,7 @@ export const criarSessao = async (usuario: Sessao) => {
   jar.set(COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: cookieSeguro(),
     path: '/',
     maxAge: DURACAO_HORAS * 3600,
   });

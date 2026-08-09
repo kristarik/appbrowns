@@ -1,5 +1,31 @@
 # Histórico de versões
 
+## v0.3.3 - Sessão que dura
+
+Corrige o login que não se sustentava em produção: entrava, mostrava o painel, e
+no primeiro clique voltava para a tela de login.
+
+### A causa
+
+O cookie de sessão era marcado como `Secure` sempre que `NODE_ENV` fosse
+`production`. Dentro do container ele é, mas o painel é servido em `http://`
+puro, sem certificado.
+
+Cookie `Secure` só trafega em HTTPS. O navegador recebia e descartava.
+
+Isso explica por que o login parecia funcionar: a primeira tela vem na mesma
+resposta da ação de entrar, sem depender do cookie. A partir do segundo clique o
+navegador precisa devolver o cookie, não tinha nenhum, e o middleware mandava de
+volta para o login.
+
+### A correção
+
+A marca `Secure` agora depende do protocolo, não do ambiente. Sai de `SERVER_URL`:
+começa com `https://` e o cookie é Secure; senão, não é.
+
+Quando o domínio com HTTPS entrar, basta trocar `SERVER_URL` no `.env` do
+servidor e a proteção volta sozinha.
+
 ## v0.3.2 - Números de verdade
 
 Corrige algo que só apareceu com o painel em produção: a barra lateral mostrava
