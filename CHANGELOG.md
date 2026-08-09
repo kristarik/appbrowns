@@ -1,5 +1,39 @@
 # Histórico de versões
 
+## v0.3.1 - No ar
+
+O painel sai da máquina de desenvolvimento e passa a rodar no VPS, em container,
+ao lado do banco.
+
+Endereço: `http://179.198.114.184:3000`
+
+### Como ficou
+
+- Imagem Docker em três estágios, usando a saída standalone do Next. A imagem
+  final não carrega código-fonte nem dependências de desenvolvimento
+- O container roda como usuário sem privilégio, não como root
+- Banco de produção (`browns`) separado do de desenvolvimento (`browns_dev`),
+  no mesmo Postgres
+- Migrações não rodam sozinhas no deploy, de propósito: uma migração aplicada
+  por engano pode apagar coluna com dado real dentro
+
+### Sem usuário inicial em produção
+
+O banco de produção subiu vazio, sem nenhum usuário. É proposital.
+
+A senha do seed (`browns2026`) está escrita no repositório. Se ela existisse em
+produção, qualquer pessoa com acesso ao código entraria no sistema.
+
+O usuário é criado pelo comando `npm run usuario:producao`, que pergunta a senha
+no terminal e grava só o hash. A senha não passa por arquivo nem pelo Git.
+
+### Correções que o deploy revelou
+
+- `prisma generate` exigia `DATABASE_URL` e quebrava a construção da imagem,
+  onde banco nenhum existe
+- O client do Prisma era criado ao importar o módulo, então `next build`
+  quebrava ao analisar as páginas. Agora a conexão nasce no primeiro uso
+
 ## v0.3.0 - Banco e login
 
 O painel para de esquecer. Nada mais é simulado: tudo que aparece na tela vem do
