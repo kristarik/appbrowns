@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 import { NAVEGACAO, type ItemNavegacao } from './navegacao';
-import { cn, iniciais } from '@/lib/utils';
-import { USUARIO } from '@/lib/dados-simulados';
+import { sair } from '@/app/acoes';
+import type { Sessao } from '@/lib/sessao';
 import { VERSAO } from '@/lib/versao';
+import { cn, iniciais } from '@/lib/utils';
 
 const PRINCIPAIS = NAVEGACAO.filter((i) => i.href !== '/configuracoes');
 const CONFIGURACOES = NAVEGACAO.find((i) => i.href === '/configuracoes')!;
@@ -41,8 +44,9 @@ const Item = ({ item, ativo }: { item: ItemNavegacao; ativo: boolean }) => {
   );
 };
 
-export const BarraIcones = () => {
+export const BarraIcones = ({ usuario }: { usuario: Sessao }) => {
   const caminho = usePathname();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   return (
     <nav className="flex w-16 shrink-0 flex-col items-center border-r border-borda bg-superficie py-3">
@@ -60,16 +64,50 @@ export const BarraIcones = () => {
         ))}
       </div>
 
-      <div className="flex flex-col items-center gap-2">
+      <div className="relative flex flex-col items-center gap-2">
         <span className="text-[10px] font-medium text-texto-fraco">v{VERSAO}</span>
         <Item item={CONFIGURACOES} ativo={caminho.startsWith(CONFIGURACOES.href)} />
+
         <button
           type="button"
-          title={USUARIO.nome}
+          onClick={() => setMenuAberto((aberto) => !aberto)}
+          title={usuario.nome}
+          aria-label="Menu do usuário"
           className="flex h-9 w-9 items-center justify-center rounded-full bg-marca text-xs font-semibold text-white"
         >
-          {iniciais(USUARIO.nome)}
+          {iniciais(usuario.nome)}
         </button>
+
+        {menuAberto && (
+          <>
+            <button
+              type="button"
+              aria-label="Fechar menu"
+              onClick={() => setMenuAberto(false)}
+              className="fixed inset-0 z-40 cursor-default"
+            />
+
+            <div className="absolute bottom-0 left-full z-50 ml-2 w-52 rounded-xl border border-borda bg-superficie p-1 shadow-lg">
+              <div className="border-b border-borda px-3 py-2">
+                <p className="truncate text-[13px] font-medium text-texto">{usuario.nome}</p>
+                <p className="truncate text-[11px] text-texto-fraco">{usuario.email}</p>
+                <p className="mt-1 inline-block rounded bg-borda-suave px-1.5 text-[10px] font-medium text-texto-suave">
+                  {usuario.papel === 'admin' ? 'Administrador' : 'Atendente'}
+                </p>
+              </div>
+
+              <form action={sair}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-texto-suave transition-colors hover:bg-perigo-fraco hover:text-perigo"
+                >
+                  <LogOut size={14} />
+                  Sair
+                </button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     </nav>
   );

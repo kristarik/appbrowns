@@ -1,13 +1,12 @@
 'use client';
 
 import { AlertTriangle, CalendarDays, GripVertical, MessageCircle } from 'lucide-react';
-import { CANAIS, NECESSIDADES, OCASIOES, type Atendimento } from '@/lib/tipos';
+import { CANAIS, NECESSIDADES, OCASIOES, type ItemQuadro } from '@/lib/tipos';
 import { camposPendentes } from '@/lib/funil';
-import { cliente, conversaDoCliente } from '@/lib/dados-simulados';
 import { cn, diasAte, formatarMoeda, iniciais } from '@/lib/utils';
 
 type Props = {
-  atendimento: Atendimento;
+  item: ItemQuadro;
   ativo: boolean;
   arrastando: boolean;
   aoSelecionar: () => void;
@@ -16,17 +15,14 @@ type Props = {
 };
 
 export const Cartao = ({
-  atendimento,
+  item,
   ativo,
   arrastando,
   aoSelecionar,
   aoIniciarArraste,
   aoTerminarArraste,
 }: Props) => {
-  const dados = cliente(atendimento.clienteId);
-  const conversa = conversaDoCliente(atendimento.clienteId);
-
-  if (!dados) return null;
+  const { atendimento, clienteNome, conversa } = item;
 
   const pendentes = camposPendentes(atendimento.etapa, atendimento.dados);
   const dias = atendimento.dataEvento ? diasAte(atendimento.dataEvento) : undefined;
@@ -66,11 +62,11 @@ export const Cartao = ({
         />
 
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marca-fraca text-[10px] font-semibold text-marca">
-          {iniciais(dados.nome)}
+          {iniciais(clienteNome)}
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-texto">{dados.nome}</p>
+          <p className="truncate text-[13px] font-medium text-texto">{clienteNome}</p>
           <p className="truncate text-[11px] text-texto-fraco">
             {NECESSIDADES[atendimento.necessidade]}
             {atendimento.ocasiao && ` · ${OCASIOES[atendimento.ocasiao]}`}
@@ -119,7 +115,7 @@ export const Cartao = ({
         )}
       </div>
 
-      {conversa && (
+      {conversa?.ultimaMensagem && (
         <div className="mt-2 flex items-center gap-1.5 border-t border-borda-suave pt-2">
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full"

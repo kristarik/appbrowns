@@ -1,16 +1,20 @@
 'use client';
 
-import { AlertTriangle, Check, ListChecks, Minus } from 'lucide-react';
+import { useTransition } from 'react';
+import { AlertTriangle, Check, ListChecks, Loader2, Minus } from 'lucide-react';
 import {
   CANAIS,
   NECESSIDADES,
   OCASIOES,
   ORIGENS,
+  type Atendimento,
   type CampoEtapa,
+  type Cliente,
   type DadosEtapa,
+  type Etapa,
 } from '@/lib/tipos';
 import { camposPendentes, etapa as definicaoEtapa, etapasDaNecessidade } from '@/lib/funil';
-import { atendimentoDoCliente, cliente } from '@/lib/dados-simulados';
+import { moverAtendimento } from '@/app/acoes';
 import { cn, diasAte, formatarMoeda, formatarTelefone } from '@/lib/utils';
 
 const Linha = ({ rotulo, valor }: { rotulo: string; valor: string }) => (
@@ -41,22 +45,45 @@ const valorDoCampo = (campo: CampoEtapa, dados: DadosEtapa) => {
   return String(bruto);
 };
 
-export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
-  const dados = cliente(clienteId);
-  const registro = dados ? atendimentoDoCliente(dados.id) : undefined;
+type Props = {
+  cliente: Cliente;
+  atendimento?: Atendimento;
+};
 
-  if (!dados || !registro) return null;
+export const DetalhesCliente = ({ cliente, atendimento }: Props) => {
+  const [salvando, iniciar] = useTransition();
 
-  const definicao = definicaoEtapa(registro.etapa);
-  const pendentes = camposPendentes(registro.etapa, registro.dados);
-  const dias = registro.dataEvento ? diasAte(registro.dataEvento) : undefined;
+  const mover = (destino: Etapa) => {
+    if (!atendimento || destino === atendimento.etapa) return;
+    iniciar(async () => void (await moverAtendimento(atendimento.id, destino)));
+  };
+
+  if (!atendimento) {
+    return (
+      <aside className="flex w-80 shrink-0 flex-col border-l border-borda bg-superficie">
+        <div className="border-b border-borda px-4 py-3">
+          <p className="text-[13px] font-semibold tracking-tight text-texto">{cliente.nome}</p>
+          <p className="text-[12px] text-texto-suave tabular-nums">
+            {formatarTelefone(cliente.telefone)}
+          </p>
+        </div>
+        <p className="px-4 py-6 text-center text-[12px] text-texto-fraco">
+          Este cliente ainda não tem atendimento aberto
+        </p>
+      </aside>
+    );
+  }
+
+  const definicao = definicaoEtapa(atendimento.etapa);
+  const pendentes = camposPendentes(atendimento.etapa, atendimento.dados);
+  const dias = atendimento.dataEvento ? diasAte(atendimento.dataEvento) : undefined;
 
   return (
     <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-l border-borda bg-superficie">
       <div className="border-b border-borda px-4 py-3">
-        <p className="text-[13px] font-semibold tracking-tight text-texto">{dados.nome}</p>
+        <p className="text-[13px] font-semibold tracking-tight text-texto">{cliente.nome}</p>
         <p className="text-[12px] text-texto-suave tabular-nums">
-          {formatarTelefone(dados.telefone)}
+          {formatarTelefone(cliente.telefone)}
         </p>
       </div>
 
@@ -64,11 +91,11 @@ export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
         <p className="px-4 pb-1 text-[11px] font-semibold tracking-wide text-texto-fraco uppercase">
           Atendimento
         </p>
-        <Linha rotulo="Origem do lead" valor={ORIGENS[registro.origem]} />
-        <Linha rotulo="Canal" valor={CANAIS[registro.canal].nome} />
-        <Linha rotulo="Interesse" valor={NECESSIDADES[registro.necessidade]} />
-        {registro.ocasiao && <Linha rotulo="Ocasião" valor={OCASIOES[registro.ocasiao]} />}
-        {registro.dataEvento && dias !== undefined && (
+        <Linha rotulo="Origem do lead" valor={ORIGENS[atendimento.origem]} />
+        <Linha rotulo="Canal" valor={CANAIS[atendimento.canal].nome} />
+        <Linha rotulo="Interesse" valor={NECESSIDADES[atendimento.necessidade]} />
+        {atendimento.ocasiao && <Linha rotulo="Ocasião" valor={OCASIOES[atendimento.ocasiao]} />}
+        {atendimento.dataEvento && dias !== undefined && (
           <div className="flex items-baseline justify-between gap-3 px-4 py-1.5">
             <span className="shrink-0 text-[12px] text-texto-fraco">Data do evento</span>
             <span
@@ -83,15 +110,18 @@ export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
                       : 'text-texto',
               )}
             >
-              {new Date(registro.dataEvento).toLocaleDateString('pt-BR')}
+              {new Date(atendimento.dataEvento).toLocaleDateString('pt-BR')}
               {dias >= 0 && ` · ${dias}d`}
             </span>
           </div>
         )}
-        {registro.interesseInicial && (
-          <Linha rotulo="Interesse inicial" valor={registro.interesseInicial} />
+        {atendimento.interesseInicial && (
+          <Linha rotulo="Interesse inicial" valor={atendimento.interesseInicial} />
         )}
-        {registro.valor && <Linha rotulo="Valor" valor={formatarMoeda(registro.valor)} />}
+        {atendimento.valor && <Linha rotulo="Valor" valor={formatarMoeda(atendimento.valor)} />}
+        {atendimento.responsavel && (
+          <Linha rotulo="Responsável" valor={atendimento.responsavel} />
+        )}
       </div>
 
       {definicao.campos.length > 0 && (
@@ -111,7 +141,7 @@ export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
 
           <ul className="px-2">
             {definicao.campos.map((campo) => {
-              const valor = valorDoCampo(campo, registro.dados);
+              const valor = valorDoCampo(campo, atendimento.dados);
 
               return (
                 <li
@@ -124,7 +154,11 @@ export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
                       valor ? 'bg-sucesso-fraco text-sucesso' : 'bg-borda-suave text-texto-fraco',
                     )}
                   >
-                    {valor ? <Check size={9} strokeWidth={3} /> : <Minus size={9} strokeWidth={3} />}
+                    {valor ? (
+                      <Check size={9} strokeWidth={3} />
+                    ) : (
+                      <Minus size={9} strokeWidth={3} />
+                    )}
                   </span>
 
                   <div className="min-w-0 flex-1">
@@ -160,20 +194,23 @@ export const DetalhesCliente = ({ clienteId }: { clienteId: string }) => {
       </div>
 
       <div className="px-4 py-3">
-        <p className="pb-2 text-[11px] font-semibold tracking-wide text-texto-fraco uppercase">
+        <p className="flex items-center gap-1.5 pb-2 text-[11px] font-semibold tracking-wide text-texto-fraco uppercase">
           Etapa
+          {salvando && <Loader2 size={11} className="animate-spin" />}
         </p>
 
         <div className="flex flex-col gap-1">
-          {etapasDaNecessidade(registro.necessidade).map((item) => {
-            const atual = item.id === registro.etapa;
+          {etapasDaNecessidade(atendimento.necessidade).map((item) => {
+            const atual = item.id === atendimento.etapa;
 
             return (
               <button
                 key={item.id}
                 type="button"
+                disabled={salvando}
+                onClick={() => mover(item.id)}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors',
+                  'flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors disabled:opacity-60',
                   atual
                     ? 'bg-marca-fraca font-medium text-marca'
                     : 'text-texto-suave hover:bg-borda-suave hover:text-texto',

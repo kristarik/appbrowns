@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/gerado/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Papel {
+  admin
+  atendente
+}
+
+enum Necessidade {
+  aluguel
+  terno_sob_medida
+  camisa_sob_medida
+  ajuste
+}
+
+enum Ocasiao {
+  casamento
+  formatura
+  corporativo
+  aniversario
+  outro
+}
+
+enum Etapa {
+  novo
+  atendimento_inicial
+  agendado
+  decidindo
+  aguardando_retirada
+  em_provas
+  em_locacao
+  finalizado
+  perdido
+}
+
+enum Canal {
+  whatsapp
+  instagram
+  telefone
+}
+
+enum OrigemLead {
+  google_ads
+  instagram
+  facebook
+  indicacao
+  passou_na_loja
+  site
+  outro
+}
+
+enum MotivoPerda {
+  preco
+  estoque
+  prazo
+  concorrencia
+  sem_retorno
+}
+
+enum StatusConversa {
+  aberta
+  resolvida
+}
+
+enum DirecaoMensagem {
+  recebida
+  enviada
+}
+
+enum AutorMensagem {
+  cliente
+  atendente
+  sistema
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senhaHash String
+  papel     Papel    @default(atendente)
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+
+  atendimentos Atendimento[]
+  tarefas      Tarefa[]
+  conversas    Conversa[]
+  mensagens    Mensagem[]
+}
+
+model Cliente {
+  id          String   @id @default(cuid())
+  nome        String
+  // Sempre em E.164 (5511999999999). Unico para o webhook do WhatsApp
+  // conseguir achar o cliente pelo numero sem criar duplicata.
+  telefone    String   @unique
+  email       String?
+  observacoes String?
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  atendimentos Atendimento[]
+  conversas    Conversa[]
+
+  @@index([nome])
+}
+
+model Atendimento {
+  id               String       @id @default(cuid())
+  cliente          Cliente      @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  clienteId        String
+  origem           OrigemLead
+  canal            Canal
+  necessidade      Necessidade
+  ocasiao          Ocasiao?
+  dataEvento       DateTime?
+  interesseInicial String?
+  etapa            Etapa        @default(novo)
+  valor            Decimal?     @db.Decimal(10, 2)
+  responsavel      Usuario?     @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+  responsavelId    String?
+  motivoPerda      MotivoPerda?
+  // Checklist da etapa. Os campos variam por etapa, entao ficam em JSON em vez
+  // de virar dezenas de colunas quase sempre nulas. A definicao de quais campos
+  // existem vive em lib/funil.ts.
+  dados            Json         @default("{}")
+  criadoEm         DateTime     @default(now())
+  atualizadoEm     DateTime     @updatedAt
+
+  tarefas Tarefa[]
+
+  @@index([etapa])
+  @@index([dataEvento])
+  @@index([origem])
+}
+
+model Tarefa {
+  id            String      @id @default(cuid())
+  atendimento   Atendimento @relation(fields: [atendimentoId], references: [id], onDelete: Cascade)
+  atendimentoId String
+  titulo        String
+  etapaOrigem   Etapa
+  venceEm       DateTime
+  concluida     Boolean     @default(false)
+  concluidaEm   DateTime?
+  responsavel   Usuario?    @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+  responsavelId String?
+  criadoEm      DateTime    @default(now())
+
+  @@index([venceEm, concluida])
+}
+
+model Conversa {
+  id               String         @id @default(cuid())
+  cliente          Cliente        @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  clienteId        String
+  canal            Canal
+  status           StatusConversa @default(aberta)
+  naoLidas         Int            @default(0)
+  ultimaMensagem   String?
+  ultimaMensagemEm DateTime?
+  responsavel      Usuario?       @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+  responsavelId    String?
+  criadoEm         DateTime       @default(now())
+
+  mensagens Mensagem[]
+
+  @@index([status, ultimaMensagemEm])
+}
+
+model Mensagem {
+  id            String          @id @default(cuid())
+  conversa      Conversa        @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  conversaId    String
+  direcao       DirecaoMensagem
+  autor         AutorMensagem
+  conteudo      String
+  // Id da mensagem na Meta. Unico para o webhook nao gravar duplicata quando
+  // a Meta reenvia o mesmo evento, o que acontece com frequencia.
+  idExterno     String?         @unique
+  enviadaPor    Usuario?        @relation(fields: [enviadaPorId], references: [id], onDelete: SetNull)
+  enviadaPorId  String?
+  enviadaEm     DateTime        @default(now())
+
+  @@index([conversaId, enviadaEm])
+}

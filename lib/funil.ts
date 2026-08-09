@@ -26,7 +26,7 @@ export const FUNIL: DefinicaoEtapa[] = [
     ],
   },
   {
-    id: 'atendimento-inicial',
+    id: 'atendimento_inicial',
     nome: 'Atendimento inicial',
     cor: '#7c3aed',
     necessidades: [],
@@ -76,7 +76,7 @@ export const FUNIL: DefinicaoEtapa[] = [
     ],
   },
   {
-    id: 'aguardando-retirada',
+    id: 'aguardando_retirada',
     nome: 'Aguardando retirada',
     cor: '#c026d3',
     necessidades: [],
@@ -92,10 +92,10 @@ export const FUNIL: DefinicaoEtapa[] = [
     ],
   },
   {
-    id: 'em-provas',
+    id: 'em_provas',
     nome: 'Em provas e ajustes',
     cor: '#0d9488',
-    necessidades: ['terno-sob-medida', 'camisa-sob-medida', 'ajuste'],
+    necessidades: ['terno_sob_medida', 'camisa_sob_medida', 'ajuste'],
     campos: [
       { id: 'proximaProva', rotulo: 'Próxima prova agendada', tipo: 'data-hora' },
       { id: 'previsaoLiberacao', rotulo: 'Data prevista para liberação', tipo: 'data' },
@@ -107,7 +107,7 @@ export const FUNIL: DefinicaoEtapa[] = [
     ],
   },
   {
-    id: 'em-locacao',
+    id: 'em_locacao',
     nome: 'Em locação',
     cor: '#4f46e5',
     necessidades: ['aluguel'],
@@ -151,7 +151,7 @@ export const FUNIL: DefinicaoEtapa[] = [
           { id: 'estoque', rotulo: 'Estoque' },
           { id: 'prazo', rotulo: 'Prazo' },
           { id: 'concorrencia', rotulo: 'Concorrência' },
-          { id: 'sem-retorno', rotulo: 'Sem retorno' },
+          { id: 'sem_retorno', rotulo: 'Sem retorno' },
         ],
       },
     ],

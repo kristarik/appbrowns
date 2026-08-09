@@ -1,5 +1,63 @@
 # Histórico de versões
 
+## v0.3.0 - Banco e login
+
+O painel para de esquecer. Nada mais é simulado: tudo que aparece na tela vem do
+PostgreSQL, e tudo que você faz é gravado.
+
+### Banco de dados
+
+PostgreSQL 17 rodando no VPS, em container. Prisma 7 como ORM.
+
+Duas bases separadas: `browns_dev` para desenvolvimento e `browns` para
+produção. Rodar migração de desenvolvimento contra o banco de produção é como se
+perde dado real sem querer.
+
+O banco escuta apenas em `127.0.0.1` dentro do servidor, ou seja, não está
+exposto na internet. Para desenvolver, sua máquina chega nele por um túnel SSH.
+
+Tabelas: usuário, cliente, atendimento, tarefa, conversa e mensagem.
+
+Dois detalhes que evitam problema mais adiante:
+
+- Telefone do cliente é único, para o webhook do WhatsApp achar a pessoa pelo
+  número em vez de criar um cadastro novo a cada mensagem
+- Mensagem tem `idExterno` único, porque a Meta reenvia o mesmo evento com
+  frequência e sem isso a conversa encheria de duplicatas
+
+O checklist das etapas fica em JSON, não em colunas. Os campos variam por etapa,
+então colunas fixas seriam dezenas quase sempre vazias.
+
+### Login
+
+Autenticação real, com senha guardada como hash bcrypt. A sessão é um JWT
+assinado em cookie httpOnly, válido por 12 horas.
+
+Proteção em duas camadas: o middleware barra quem não tem cookie, e o layout do
+painel valida a assinatura no servidor, derrubando token forjado ou expirado.
+
+E-mail inexistente e senha errada devolvem a mesma mensagem, de propósito. Dizer
+qual dos dois falhou entrega para um atacante quais e-mails existem no sistema.
+
+### O que agora é de verdade
+
+- Arrastar card grava a etapa no banco. Recarregue a página: continua lá
+- Trocar etapa pelo painel lateral também grava
+- Responder no chat grava a mensagem com seu nome e atualiza a conversa
+- Resolver conversa grava
+- Concluir follow-up grava
+
+Kanban e follow-ups usam atualização otimista: a tela responde na hora e o React
+desfaz sozinho se a gravação falhar.
+
+As mensagens são buscadas sob demanda ao abrir a conversa, não todas de uma vez.
+Um histórico de anos de WhatsApp não caberia no carregamento da página.
+
+### Correções
+
+- O horário das conversas usava a data fixa da época dos dados simulados, então
+  uma conversa de três dias atrás aparecia como se fosse de hoje
+
 ## v0.2.1 - Kanban utilizável
 
 Correção de dois problemas que deixavam o quadro inutilizável.

@@ -2,26 +2,20 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import type { Atendimento, Etapa, Necessidade } from '@/lib/tipos';
+import type { Etapa, ItemQuadro, Necessidade } from '@/lib/tipos';
 import { etapasDaNecessidade } from '@/lib/funil';
 import { cn, formatarMoeda } from '@/lib/utils';
 import { Cartao } from './cartao';
 
 type Props = {
-  atendimentos: Atendimento[];
+  itens: ItemQuadro[];
   necessidade?: Necessidade;
   selecionado?: string;
   aoSelecionar: (id: string) => void;
   aoMover: (id: string, destino: Etapa) => void;
 };
 
-export const Quadro = ({
-  atendimentos,
-  necessidade,
-  selecionado,
-  aoSelecionar,
-  aoMover,
-}: Props) => {
+export const Quadro = ({ itens, necessidade, selecionado, aoSelecionar, aoMover }: Props) => {
   const [arrastando, setArrastando] = useState<string>();
   const [alvo, setAlvo] = useState<Etapa>();
 
@@ -38,8 +32,8 @@ export const Quadro = ({
   return (
     <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto px-4 pb-4">
       {etapasDaNecessidade(necessidade).map((etapa) => {
-        const daEtapa = atendimentos.filter((a) => a.etapa === etapa.id);
-        const total = daEtapa.reduce((soma, a) => soma + (a.valor ?? 0), 0);
+        const daEtapa = itens.filter((i) => i.atendimento.etapa === etapa.id);
+        const total = daEtapa.reduce((soma, i) => soma + (i.atendimento.valor ?? 0), 0);
         const destacada = alvo === etapa.id && arrastando !== undefined;
 
         return (
@@ -82,14 +76,14 @@ export const Quadro = ({
                   : 'border-transparent bg-borda-suave/50',
               )}
             >
-              {daEtapa.map((atendimento) => (
+              {daEtapa.map((item) => (
                 <Cartao
-                  key={atendimento.id}
-                  atendimento={atendimento}
-                  ativo={atendimento.id === selecionado}
-                  arrastando={arrastando === atendimento.id}
-                  aoSelecionar={() => aoSelecionar(atendimento.id)}
-                  aoIniciarArraste={() => setArrastando(atendimento.id)}
+                  key={item.atendimento.id}
+                  item={item}
+                  ativo={item.atendimento.id === selecionado}
+                  arrastando={arrastando === item.atendimento.id}
+                  aoSelecionar={() => aoSelecionar(item.atendimento.id)}
+                  aoIniciarArraste={() => setArrastando(item.atendimento.id)}
                   aoTerminarArraste={() => {
                     setArrastando(undefined);
                     setAlvo(undefined);

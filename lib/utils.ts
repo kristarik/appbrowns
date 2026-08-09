@@ -34,7 +34,7 @@ export const formatarData = (iso: string) =>
 
 export const horaOuData = (iso: string) => {
   const data = new Date(iso);
-  const agora = new Date('2026-08-06T12:00:00');
+  const agora = new Date();
   const mesmoDia = data.toDateString() === agora.toDateString();
 
   if (mesmoDia) {

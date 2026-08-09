@@ -1,7 +1,12 @@
+// Os valores destes tipos sao identicos aos enums do Prisma (snake_case), para
+// que o dado do banco chegue na tela sem camada de traducao no meio. Sao unioes
+// de string em vez de import do @prisma/client porque estes tipos rodam tambem
+// em componentes de cliente, e o client do Prisma nao pode ir para o navegador.
+
 export type Necessidade =
   | 'aluguel'
-  | 'terno-sob-medida'
-  | 'camisa-sob-medida'
+  | 'terno_sob_medida'
+  | 'camisa_sob_medida'
   | 'ajuste';
 
 export type Ocasiao =
@@ -13,23 +18,23 @@ export type Ocasiao =
 
 export type Etapa =
   | 'novo'
-  | 'atendimento-inicial'
+  | 'atendimento_inicial'
   | 'agendado'
   | 'decidindo'
-  | 'aguardando-retirada'
-  | 'em-provas'
-  | 'em-locacao'
+  | 'aguardando_retirada'
+  | 'em_provas'
+  | 'em_locacao'
   | 'finalizado'
   | 'perdido';
 
 export type Canal = 'whatsapp' | 'instagram' | 'telefone';
 
 export type OrigemLead =
-  | 'google-ads'
+  | 'google_ads'
   | 'instagram'
   | 'facebook'
   | 'indicacao'
-  | 'passou-na-loja'
+  | 'passou_na_loja'
   | 'site'
   | 'outro';
 
@@ -38,7 +43,9 @@ export type MotivoPerda =
   | 'estoque'
   | 'prazo'
   | 'concorrencia'
-  | 'sem-retorno';
+  | 'sem_retorno';
+
+export type Papel = 'admin' | 'atendente';
 
 export type TipoCampo =
   | 'texto'
@@ -56,6 +63,8 @@ export type CampoEtapa = {
   opcoes?: { id: string; rotulo: string }[];
 };
 
+export type DadosEtapa = Record<string, string | number | boolean | undefined>;
+
 export type Cliente = {
   id: string;
   nome: string;
@@ -64,10 +73,6 @@ export type Cliente = {
   observacoes?: string;
   criadoEm: string;
 };
-
-// Os campos do checklist variam por etapa, entao ficam num mapa aberto em vez
-// de colunas fixas. A definicao de quais existem vive em lib/funil.ts.
-export type DadosEtapa = Record<string, string | number | boolean | undefined>;
 
 export type Atendimento = {
   id: string;
@@ -80,7 +85,7 @@ export type Atendimento = {
   interesseInicial?: string;
   etapa: Etapa;
   valor?: number;
-  responsavel: string;
+  responsavel?: string;
   motivoPerda?: MotivoPerda;
   dados: DadosEtapa;
   atualizadoEm: string;
@@ -93,7 +98,8 @@ export type Tarefa = {
   etapaOrigem: Etapa;
   venceEm: string;
   concluida: boolean;
-  responsavel: string;
+  responsavel?: string;
+  cliente: string;
 };
 
 export type Mensagem = {
@@ -102,24 +108,34 @@ export type Mensagem = {
   direcao: 'recebida' | 'enviada';
   autor: 'cliente' | 'atendente' | 'sistema';
   conteudo: string;
+  enviadaPor?: string;
   enviadaEm: string;
 };
 
 export type Conversa = {
   id: string;
   clienteId: string;
+  clienteNome: string;
   canal: Canal;
   status: 'aberta' | 'resolvida';
   naoLidas: number;
-  ultimaMensagem: string;
-  ultimaMensagemEm: string;
+  ultimaMensagem?: string;
+  ultimaMensagemEm?: string;
   responsavel?: string;
+};
+
+// O cartao do kanban precisa de dados de tres tabelas ao mesmo tempo. Juntar
+// no servidor evita que o componente tenha que buscar nome e conversa por conta.
+export type ItemQuadro = {
+  atendimento: Atendimento;
+  clienteNome: string;
+  conversa?: Conversa;
 };
 
 export const NECESSIDADES: Record<Necessidade, string> = {
   aluguel: 'Aluguel',
-  'terno-sob-medida': 'Terno sob medida',
-  'camisa-sob-medida': 'Camisa sob medida',
+  terno_sob_medida: 'Terno sob medida',
+  camisa_sob_medida: 'Camisa sob medida',
   ajuste: 'Ajuste / conserto',
 };
 
@@ -138,11 +154,11 @@ export const CANAIS: Record<Canal, { nome: string; cor: string }> = {
 };
 
 export const ORIGENS: Record<OrigemLead, string> = {
-  'google-ads': 'Google Ads',
+  google_ads: 'Google Ads',
   instagram: 'Instagram',
   facebook: 'Facebook',
   indicacao: 'Indicação',
-  'passou-na-loja': 'Passou na loja',
+  passou_na_loja: 'Passou na loja',
   site: 'Site',
   outro: 'Outro',
 };
@@ -152,5 +168,5 @@ export const MOTIVOS_PERDA: Record<MotivoPerda, string> = {
   estoque: 'Estoque',
   prazo: 'Prazo',
   concorrencia: 'Concorrência',
-  'sem-retorno': 'Sem retorno',
+  sem_retorno: 'Sem retorno',
 };
