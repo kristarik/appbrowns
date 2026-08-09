@@ -18,6 +18,19 @@ const haMinutos = (minutos: number) => new Date(Date.now() - minutos * 60000);
 const SENHA_PADRAO = 'browns2026';
 
 const main = async () => {
+  // O seed apaga tudo antes de popular. Rodar isso por engano contra producao
+  // levaria embora os clientes reais da loja, entao precisa de confirmacao
+  // explicita quando o banco nao e o de desenvolvimento.
+  const banco = process.env.DATABASE_URL ?? '';
+  const ehDesenvolvimento = banco.includes('browns_dev');
+
+  if (!ehDesenvolvimento && process.env.CONFIRMO_APAGAR_TUDO !== 'sim') {
+    console.error('Este banco não parece ser o de desenvolvimento.');
+    console.error('O seed APAGA todos os dados antes de popular.');
+    console.error('Para prosseguir mesmo assim: CONFIRMO_APAGAR_TUDO=sim');
+    process.exit(1);
+  }
+
   // Ordem importa por causa das chaves estrangeiras.
   await db.mensagem.deleteMany();
   await db.conversa.deleteMany();

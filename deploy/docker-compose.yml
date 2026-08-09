@@ -1,0 +1,43 @@
+# Producao. Roda no VPS em /opt/browns.
+#
+# O banco publica porta apenas em 127.0.0.1, entao nao esta acessivel pela
+# internet. Quem fala com ele e o container do painel, pela rede interna do
+# compose, e o desenvolvedor, por tunel SSH.
+
+name: browns
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: browns
+      POSTGRES_PASSWORD: ${PG_SENHA}
+      POSTGRES_DB: browns
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U browns -d browns']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  painel:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://browns:${PG_SENHA}@db:5432/browns?schema=public
+      AUTH_SECRET: ${AUTH_SECRET}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dados:

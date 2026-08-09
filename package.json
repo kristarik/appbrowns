@@ -10,7 +10,9 @@
     "tunel": "ssh -i ~/.ssh/crm_browns_vps -N -L 5432:localhost:5432 root@179.198.114.184",
     "db:migrar": "prisma migrate dev",
     "db:popular": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "usuario": "tsx prisma/criar-usuario.ts",
+    "usuario:producao": "cross-env PRODUCAO=1 tsx prisma/criar-usuario.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -34,6 +36,7 @@
     "@types/pg": "^8.21.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
