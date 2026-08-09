@@ -20,7 +20,7 @@ export const Casca = ({ usuario, contagens, configuracao, children }: Props) => 
 
   // Montado aqui, e nao no servidor, porque a navegacao carrega componentes de
   // icone e funcoes nao atravessam a fronteira servidor/cliente.
-  const navegacao = montarNavegacao(contagens, configuracao.nomeLoja);
+  const navegacao = montarNavegacao(contagens, configuracao.nomeLoja, usuario.papel);
 
   // A cor escolhida em Configuracoes sobrescreve as variaveis do tema. O valor
   // e validado como #rrggbb na acao que salva, entao nao ha injecao possivel.

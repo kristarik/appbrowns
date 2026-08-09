@@ -6,6 +6,13 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { cifrar, decifrar } from '@/lib/cripto';
 import { CAMPOS_INTEGRACAO } from '@/lib/integracoes';
+import {
+  gerenciarEquipe,
+  gerenciarSistema,
+  papeisQuePodeConceder,
+  podeMexerEm,
+} from '@/lib/permissoes';
+import type { Papel } from '@/lib/tipos';
 import { criarSessao, lerSessao } from '@/lib/sessao';
 
 export type Resultado = { erro?: string; ok?: string };
@@ -14,9 +21,37 @@ const exigirAdmin = async () => {
   const sessao = await lerSessao();
 
   if (!sessao) return { erro: 'Sessão expirada' } as const;
-  if (sessao.papel !== 'admin') return { erro: 'Só administradores podem fazer isso' } as const;
+  if (!gerenciarSistema(sessao.papel)) {
+    return { erro: 'Só administradores podem fazer isso' } as const;
+  }
 
   return { sessao } as const;
+};
+
+const exigirGestaoDeEquipe = async () => {
+  const sessao = await lerSessao();
+
+  if (!sessao) return { erro: 'Sessão expirada' } as const;
+  if (!gerenciarEquipe(sessao.papel)) {
+    return { erro: 'Só gerentes e administradores podem fazer isso' } as const;
+  }
+
+  return { sessao } as const;
+};
+
+// Sobra pelo menos um administrador ativo depois da mudanca? Sem isso, o painel
+// pode ficar sem ninguem capaz de mexer em integracoes e dados da loja.
+const restariaSemAdmin = async (idAlvo: string) => {
+  const alvo = await db.usuario.findUnique({
+    where: { id: idAlvo },
+    select: { papel: true, ativo: true },
+  });
+
+  if (alvo?.papel !== 'admin' || !alvo.ativo) return false;
+
+  const admins = await db.usuario.count({ where: { papel: 'admin', ativo: true } });
+
+  return admins <= 1;
 };
 
 // ———————————————————————— Geral ————————————————————————
@@ -118,14 +153,14 @@ const entradaUsuario = z.object({
   nome: z.string().trim().min(2, 'Informe o nome'),
   email: z.string().trim().toLowerCase().email('E-mail inválido'),
   senha: z.string().min(8, 'A senha precisa ter pelo menos 8 caracteres'),
-  papel: z.enum(['admin', 'atendente']),
+  papel: z.enum(['admin', 'gerente', 'atendente']),
 });
 
 export const criarUsuario = async (
   _anterior: Resultado,
   formulario: FormData,
 ): Promise<Resultado> => {
-  const permissao = await exigirAdmin();
+  const permissao = await exigirGestaoDeEquipe();
 
   if ('erro' in permissao) return permissao;
 
@@ -137,6 +172,10 @@ export const criarUsuario = async (
   });
 
   if (!dados.success) return { erro: dados.error.issues[0].message };
+
+  if (!papeisQuePodeConceder(permissao.sessao.papel).includes(dados.data.papel)) {
+    return { erro: 'Você não pode criar alguém com esse papel' };
+  }
 
   const existente = await db.usuario.findUnique({ where: { email: dados.data.email } });
 
@@ -156,24 +195,32 @@ export const criarUsuario = async (
   return { ok: `${dados.data.nome} adicionado` };
 };
 
+// Confere se o ator pode mexer neste alvo especifico. Um gerente nao alcanca
+// administrador, e ninguem mexe em si mesmo pela tela de equipe.
+const validarAlvo = async (ator: { id: string; papel: Papel }, id: string) => {
+  if (id === ator.id) return 'Você não pode alterar a si mesmo por aqui';
+
+  const alvo = await db.usuario.findUnique({ where: { id }, select: { papel: true } });
+
+  if (!alvo) return 'Usuário não encontrado';
+  if (!podeMexerEm(ator.papel, alvo.papel)) {
+    return 'Você não tem permissão sobre um administrador';
+  }
+
+  return undefined;
+};
+
 export const alternarAtivo = async (id: string, ativo: boolean): Promise<Resultado> => {
-  const permissao = await exigirAdmin();
+  const permissao = await exigirGestaoDeEquipe();
 
   if ('erro' in permissao) return permissao;
 
-  if (id === permissao.sessao.id) {
-    return { erro: 'Você não pode desativar a si mesmo' };
-  }
+  const impedimento = await validarAlvo(permissao.sessao, id);
 
-  if (!ativo) {
-    const admins = await db.usuario.count({ where: { papel: 'admin', ativo: true } });
-    const alvo = await db.usuario.findUnique({ where: { id }, select: { papel: true } });
+  if (impedimento) return { erro: impedimento };
 
-    // Sem essa trava, desativar o ultimo admin deixaria o painel sem ninguem
-    // capaz de gerenciar equipe ou integracoes.
-    if (alvo?.papel === 'admin' && admins <= 1) {
-      return { erro: 'Este é o último administrador ativo' };
-    }
+  if (!ativo && (await restariaSemAdmin(id))) {
+    return { erro: 'Este é o último administrador ativo' };
   }
 
   await db.usuario.update({ where: { id }, data: { ativo } });
@@ -183,25 +230,21 @@ export const alternarAtivo = async (id: string, ativo: boolean): Promise<Resulta
   return { ok: ativo ? 'Usuário reativado' : 'Usuário desativado' };
 };
 
-export const mudarPapel = async (
-  id: string,
-  papel: 'admin' | 'atendente',
-): Promise<Resultado> => {
-  const permissao = await exigirAdmin();
+export const mudarPapel = async (id: string, papel: Papel): Promise<Resultado> => {
+  const permissao = await exigirGestaoDeEquipe();
 
   if ('erro' in permissao) return permissao;
 
-  if (id === permissao.sessao.id) {
-    return { erro: 'Você não pode mudar seu próprio papel' };
+  const impedimento = await validarAlvo(permissao.sessao, id);
+
+  if (impedimento) return { erro: impedimento };
+
+  if (!papeisQuePodeConceder(permissao.sessao.papel).includes(papel)) {
+    return { erro: 'Você não pode conceder esse papel' };
   }
 
-  if (papel === 'atendente') {
-    const admins = await db.usuario.count({ where: { papel: 'admin', ativo: true } });
-    const alvo = await db.usuario.findUnique({ where: { id }, select: { papel: true } });
-
-    if (alvo?.papel === 'admin' && admins <= 1) {
-      return { erro: 'Este é o último administrador ativo' };
-    }
+  if (papel !== 'admin' && (await restariaSemAdmin(id))) {
+    return { erro: 'Este é o último administrador ativo' };
   }
 
   await db.usuario.update({ where: { id }, data: { papel } });
@@ -209,6 +252,29 @@ export const mudarPapel = async (
   revalidatePath('/configuracoes/equipe');
 
   return { ok: 'Papel atualizado' };
+};
+
+export const excluirUsuario = async (id: string): Promise<Resultado> => {
+  const permissao = await exigirGestaoDeEquipe();
+
+  if ('erro' in permissao) return permissao;
+
+  const impedimento = await validarAlvo(permissao.sessao, id);
+
+  if (impedimento) return { erro: impedimento };
+
+  if (await restariaSemAdmin(id)) {
+    return { erro: 'Este é o último administrador ativo' };
+  }
+
+  // Atendimentos, tarefas e mensagens ficam no lugar: o schema desliga a
+  // relacao em vez de apagar em cascata. O historico da loja nao pode sumir
+  // porque alguem saiu da equipe.
+  const removido = await db.usuario.delete({ where: { id }, select: { nome: true } });
+
+  revalidatePath('/configuracoes/equipe');
+
+  return { ok: `${removido.nome} foi excluído. O histórico dele continua no sistema.` };
 };
 
 export const renomearMeuPerfil = async (

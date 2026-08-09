@@ -45,7 +45,7 @@ export type MotivoPerda =
   | 'concorrencia'
   | 'sem_retorno';
 
-export type Papel = 'admin' | 'atendente';
+export type Papel = 'admin' | 'gerente' | 'atendente';
 
 export type TipoCampo =
   | 'texto'

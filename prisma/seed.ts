@@ -49,7 +49,7 @@ const main = async () => {
       data: { nome: 'Ana', email: 'ana@browns.com.br', senhaHash, papel: 'atendente' },
     }),
     db.usuario.create({
-      data: { nome: 'Bruno', email: 'bruno@browns.com.br', senhaHash, papel: 'atendente' },
+      data: { nome: 'Bruno', email: 'bruno@browns.com.br', senhaHash, papel: 'gerente' },
     }),
   ]);
 

@@ -10,6 +10,7 @@ import {
   type Resultado,
 } from '@/app/configuracoes-acoes';
 import type { ConfiguracaoGeral } from '@/lib/consultas';
+import { gerenciarSistema } from '@/lib/permissoes';
 import type { Sessao } from '@/lib/sessao';
 
 type Props = {
@@ -32,7 +33,7 @@ export const TelaGeral = ({ configuracao, usuario }: Props) => {
     {},
   );
 
-  const admin = usuario.papel === 'admin';
+  const admin = gerenciarSistema(usuario.papel);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">

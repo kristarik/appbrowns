@@ -7,6 +7,7 @@ import { LogOut } from 'lucide-react';
 import type { ItemNavegacao } from './navegacao';
 import { sair } from '@/app/acoes';
 import type { ConfiguracaoGeral } from '@/lib/consultas';
+import { PAPEIS } from '@/lib/permissoes';
 import type { Sessao } from '@/lib/sessao';
 import { VERSAO } from '@/lib/versao';
 import { cn, iniciais } from '@/lib/utils';
@@ -108,7 +109,7 @@ export const BarraIcones = ({ usuario, navegacao, configuracao }: Props) => {
                 <p className="truncate text-[13px] font-medium text-texto">{usuario.nome}</p>
                 <p className="truncate text-[11px] text-texto-fraco">{usuario.email}</p>
                 <p className="mt-1 inline-block rounded bg-borda-suave px-1.5 text-[10px] font-medium text-texto-suave">
-                  {usuario.papel === 'admin' ? 'Administrador' : 'Atendente'}
+                  {PAPEIS[usuario.papel].nome}
                 </p>
               </div>
 

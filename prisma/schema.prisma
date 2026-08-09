@@ -9,6 +9,7 @@ datasource db {
 
 enum Papel {
   admin
+  gerente
   atendente
 }
 

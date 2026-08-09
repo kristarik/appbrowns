@@ -1,5 +1,46 @@
 # Histórico de versões
 
+## v0.4.1 - Três papéis
+
+Entra o papel de **Gerente**, entre o administrador e o atendente.
+
+| | Atendente | Gerente | Administrador |
+|---|---|---|---|
+| Conversas, funil, clientes, follow-ups | sim | sim | sim |
+| Trocar a própria senha | sim | sim | sim |
+| Relatórios | **não** | sim | sim |
+| Criar, editar e excluir equipe | não | sim | sim |
+| Integrações e dados da loja | não | não | sim |
+
+### O atendente não vê relatórios
+
+Some do menu, não fica cinza. E quem digitar o endereço direto encontra uma tela
+explicando que a área não é do acesso dele.
+
+Esconder do menu não é proteção: o menu vive no navegador. Cada rota confere o
+papel de novo no servidor.
+
+### O gerente não alcança administrador
+
+Um gerente gerencia atendentes e outros gerentes. Não consegue editar, desativar
+nem excluir um administrador, e a opção "Administrador" nem aparece na lista de
+papéis que ele pode conceder.
+
+Sem essa regra, bastaria um gerente se promover pela tela de equipe para virar
+administrador, e a separação entre os dois papéis deixaria de existir. A trava
+está na ação do servidor, não só na tela.
+
+### Excluir membro
+
+Além de desativar, agora dá para excluir de vez, com confirmação em dois passos.
+
+Atendimentos, tarefas e mensagens da pessoa **continuam no sistema**: o vínculo é
+desfeito, o histórico fica. O passado da loja não pode sumir porque alguém saiu
+da equipe.
+
+Continua valendo: ninguém mexe em si mesmo, e o último administrador ativo não
+pode ser desativado, rebaixado nem excluído.
+
 ## v0.4.0 - Configurações
 
 As Configurações eram uma tela de aviso, sem nada funcional. Agora são quatro

@@ -9,7 +9,16 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { Contagens } from '@/lib/consultas';
-import { CANAIS, NECESSIDADES, ORIGENS, type Canal, type Necessidade, type OrigemLead } from '@/lib/tipos';
+import { gerenciarEquipe, gerenciarSistema, verRelatorios } from '@/lib/permissoes';
+import {
+  CANAIS,
+  NECESSIDADES,
+  ORIGENS,
+  type Canal,
+  type Necessidade,
+  type OrigemLead,
+  type Papel,
+} from '@/lib/tipos';
 
 export type SubItem = {
   href: string;
@@ -33,7 +42,7 @@ export type ItemNavegacao = {
 // numa instalacao nova.
 const talvez = (total?: number) => (total ? total : undefined);
 
-export const montarNavegacao = (c: Contagens, nomeLoja: string): ItemNavegacao[] => [
+const todosOsItens = (c: Contagens, nomeLoja: string): ItemNavegacao[] => [
   {
     href: '/chat',
     rotulo: 'Chat',
@@ -236,3 +245,31 @@ export const montarNavegacao = (c: Contagens, nomeLoja: string): ItemNavegacao[]
     ],
   },
 ];
+
+// Esconder da navegacao nao substitui a checagem na pagina, so evita mostrar
+// uma porta que a pessoa nao consegue abrir. Cada rota confere de novo no
+// servidor, porque o menu vive no navegador e nao vale como tranca.
+export const montarNavegacao = (
+  c: Contagens,
+  nomeLoja: string,
+  papel: Papel,
+): ItemNavegacao[] =>
+  todosOsItens(c, nomeLoja)
+    .filter((item) => (item.href === '/relatorios' ? verRelatorios(papel) : true))
+    .map((item) => {
+      if (item.href !== '/configuracoes') return item;
+
+      const permitido = (href: string) => {
+        if (href === '/configuracoes/integracoes') return gerenciarSistema(papel);
+        if (href === '/configuracoes/equipe') return gerenciarEquipe(papel);
+        return true;
+      };
+
+      return {
+        ...item,
+        secoes: item.secoes.map((secao) => ({
+          ...secao,
+          itens: secao.itens.filter((sub) => permitido(sub.href)),
+        })),
+      };
+    });

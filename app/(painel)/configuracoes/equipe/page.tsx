@@ -1,12 +1,18 @@
 import { redirect } from 'next/navigation';
 import { TelaEquipe } from '@/components/configuracoes/tela-equipe';
+import { SemPermissao } from '@/components/layout/sem-permissao';
 import { listarUsuarios } from '@/lib/consultas';
+import { gerenciarEquipe } from '@/lib/permissoes';
 import { lerSessao } from '@/lib/sessao';
 
 const PaginaEquipe = async () => {
   const usuario = await lerSessao();
 
   if (!usuario) redirect('/login');
+
+  if (!gerenciarEquipe(usuario.papel)) {
+    return <SemPermissao papel={usuario.papel} precisa="para gerentes e administradores" />;
+  }
 
   const usuarios = await listarUsuarios();
 

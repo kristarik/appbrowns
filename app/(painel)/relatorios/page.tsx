@@ -1,4 +1,8 @@
+import { redirect } from 'next/navigation';
 import { ChartColumn, Megaphone } from 'lucide-react';
+import { SemPermissao } from '@/components/layout/sem-permissao';
+import { verRelatorios } from '@/lib/permissoes';
+import { lerSessao } from '@/lib/sessao';
 
 const BLOCOS = [
   {
@@ -27,8 +31,17 @@ const BLOCOS = [
   },
 ];
 
-const PaginaRelatorios = () => (
-  <div className="h-full overflow-y-auto p-5">
+const PaginaRelatorios = async () => {
+  const usuario = await lerSessao();
+
+  if (!usuario) redirect('/login');
+
+  if (!verRelatorios(usuario.papel)) {
+    return <SemPermissao papel={usuario.papel} precisa="para gerentes e administradores" />;
+  }
+
+  return (
+    <div className="h-full overflow-y-auto p-5">
     <header className="pb-4">
       <h2 className="text-[15px] font-semibold tracking-tight text-texto">Relatórios</h2>
       <p className="text-[12px] text-texto-suave">
@@ -77,8 +90,9 @@ const PaginaRelatorios = () => (
       O relatório de Marketing só fica útil se o campo Origem do lead for preenchido
       na entrada. Sem ele, dá para ver visitas no site, mas não dá para saber quais
       viraram venda.
-    </p>
-  </div>
-);
+      </p>
+    </div>
+  );
+};
 
 export default PaginaRelatorios;
