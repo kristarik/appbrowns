@@ -1,19 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronDown, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
-import { NAVEGACAO } from './navegacao';
+import type { ItemNavegacao } from './navegacao';
 import { cn } from '@/lib/utils';
 
-type SidebarProps = {
+type Props = {
+  navegacao: ItemNavegacao[];
   recolhida: boolean;
   aoAlternar: () => void;
 };
 
-export const Sidebar = ({ recolhida, aoAlternar }: SidebarProps) => {
+export const Sidebar = ({ navegacao, recolhida, aoAlternar }: Props) => {
   const caminho = usePathname();
-  const secao = NAVEGACAO.find((i) => caminho.startsWith(i.href)) ?? NAVEGACAO[0];
+  const parametros = useSearchParams();
+  const secao = navegacao.find((i) => caminho.startsWith(i.href)) ?? navegacao[0];
+
+  // O item ativo depende tambem da query, porque /chat e /chat?filtro=minhas
+  // sao entradas diferentes apontando para o mesmo caminho.
+  const atual = parametros.toString() ? `${caminho}?${parametros}` : caminho;
 
   if (recolhida) {
     return (
@@ -72,57 +78,61 @@ export const Sidebar = ({ recolhida, aoAlternar }: SidebarProps) => {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 pb-4">
-        {secao.secoes.map((grupo, indice) => (
-          <div key={grupo.titulo ?? indice} className={cn(indice > 0 && 'mt-5')}>
-            {grupo.titulo && (
-              <p className="px-2 pb-1.5 text-[11px] font-semibold tracking-wide text-texto-fraco uppercase">
-                {grupo.titulo}
-              </p>
-            )}
+        {secao.secoes.map((grupo, indice) => {
+          if (grupo.itens.length === 0) return null;
 
-            <ul className="flex flex-col gap-0.5">
-              {grupo.itens.map((item) => {
-                const ativo = caminho + '' === item.href;
+          return (
+            <div key={grupo.titulo ?? indice} className={cn(indice > 0 && 'mt-5')}>
+              {grupo.titulo && (
+                <p className="px-2 pb-1.5 text-[11px] font-semibold tracking-wide text-texto-fraco uppercase">
+                  {grupo.titulo}
+                </p>
+              )}
 
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition-colors',
-                        ativo
-                          ? 'bg-marca-fraca font-medium text-marca'
-                          : 'text-texto-suave hover:bg-borda-suave hover:text-texto',
-                      )}
-                    >
-                      {item.cor && (
-                        <span
-                          className="h-2 w-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: item.cor }}
-                        />
-                      )}
-                      <span className="flex-1 truncate">{item.rotulo}</span>
-                      {item.contador !== undefined && (
-                        <span
-                          className={cn(
-                            'shrink-0 text-[11px] font-medium tabular-nums',
-                            item.alerta
-                              ? 'rounded bg-alerta-fraco px-1 text-alerta'
-                              : ativo
-                                ? 'text-marca'
-                                : 'text-texto-fraco',
-                          )}
-                        >
-                          {item.contador}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+              <ul className="flex flex-col gap-0.5">
+                {grupo.itens.map((item) => {
+                  const ativo = atual === item.href;
+
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition-colors',
+                          ativo
+                            ? 'bg-marca-fraca font-medium text-marca'
+                            : 'text-texto-suave hover:bg-borda-suave hover:text-texto',
+                        )}
+                      >
+                        {item.cor && (
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: item.cor }}
+                          />
+                        )}
+                        <span className="flex-1 truncate">{item.rotulo}</span>
+                        {item.contador !== undefined && (
+                          <span
+                            className={cn(
+                              'shrink-0 text-[11px] font-medium tabular-nums',
+                              item.alerta
+                                ? 'rounded bg-alerta-fraco px-1 text-alerta'
+                                : ativo
+                                  ? 'text-marca'
+                                  : 'text-texto-fraco',
+                            )}
+                          >
+                            {item.contador}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
       </nav>
     </aside>
   );

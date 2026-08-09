@@ -8,6 +8,8 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import type { Contagens } from '@/lib/consultas';
+import { CANAIS, NECESSIDADES, ORIGENS, type Canal, type Necessidade, type OrigemLead } from '@/lib/tipos';
 
 export type SubItem = {
   href: string;
@@ -27,38 +29,56 @@ export type ItemNavegacao = {
   secoes: { titulo?: string; itens: SubItem[] }[];
 };
 
-export const NAVEGACAO: ItemNavegacao[] = [
+// Um contador zerado nao aparece, para a lateral nao virar uma parede de zeros
+// numa instalacao nova.
+const talvez = (total?: number) => (total ? total : undefined);
+
+export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
   {
     href: '/chat',
     rotulo: 'Chat',
     icone: MessageCircle,
     titulo: 'Conversas',
     subtitulo: 'Browns Alfaiataria',
-    distintivo: 7,
+    distintivo: talvez(c.conversas.todas - c.conversas.resolvidas),
     secoes: [
       {
         itens: [
-          { href: '/chat', rotulo: 'Todas as conversas', contador: 8 },
-          { href: '/chat?filtro=minhas', rotulo: 'Minhas', contador: 6 },
-          { href: '/chat?filtro=nao-atribuidas', rotulo: 'Não atribuídas', contador: 2 },
-          { href: '/chat?filtro=resolvidas', rotulo: 'Resolvidas', contador: 1 },
+          { href: '/chat', rotulo: 'Todas as conversas', contador: talvez(c.conversas.todas) },
+          { href: '/chat?filtro=minhas', rotulo: 'Minhas', contador: talvez(c.conversas.minhas) },
+          {
+            href: '/chat?filtro=nao-atribuidas',
+            rotulo: 'Não atribuídas',
+            contador: talvez(c.conversas.naoAtribuidas),
+          },
+          {
+            href: '/chat?filtro=resolvidas',
+            rotulo: 'Resolvidas',
+            contador: talvez(c.conversas.resolvidas),
+          },
         ],
       },
       {
         titulo: 'Canais',
-        itens: [
-          { href: '/chat?canal=whatsapp', rotulo: 'WhatsApp', cor: '#25d366', contador: 6 },
-          { href: '/chat?canal=instagram', rotulo: 'Instagram', cor: '#e1306c', contador: 2 },
-          { href: '/chat?canal=telefone', rotulo: 'Telefone', cor: '#8b96a8' },
-        ],
+        itens: (Object.keys(CANAIS) as Canal[]).map((canal) => ({
+          href: `/chat?canal=${canal}`,
+          rotulo: CANAIS[canal].nome,
+          cor: CANAIS[canal].cor,
+          contador: talvez(c.conversas.porCanal[canal]),
+        })),
       },
-      {
-        titulo: 'Equipe',
-        itens: [
-          { href: '/chat?responsavel=ana', rotulo: 'Ana', contador: 3 },
-          { href: '/chat?responsavel=bruno', rotulo: 'Bruno', contador: 3 },
-        ],
-      },
+      ...(c.conversas.porResponsavel.length > 0
+        ? [
+            {
+              titulo: 'Equipe',
+              itens: c.conversas.porResponsavel.map((r) => ({
+                href: `/chat?responsavel=${encodeURIComponent(r.nome)}`,
+                rotulo: r.nome,
+                contador: r.total,
+              })),
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -70,29 +90,47 @@ export const NAVEGACAO: ItemNavegacao[] = [
     secoes: [
       {
         itens: [
-          { href: '/kanban', rotulo: 'Todos os atendimentos', contador: 11 },
-          { href: '/kanban?filtro=meus', rotulo: 'Meus atendimentos', contador: 6 },
-          { href: '/kanban?filtro=urgentes', rotulo: 'Evento em até 7 dias', contador: 3 },
-          { href: '/kanban?filtro=pendencias', rotulo: 'Checklist incompleto', contador: 4, alerta: true },
+          {
+            href: '/kanban',
+            rotulo: 'Todos os atendimentos',
+            contador: talvez(c.atendimentos.todos),
+          },
+          {
+            href: '/kanban?filtro=meus',
+            rotulo: 'Meus atendimentos',
+            contador: talvez(c.atendimentos.meus),
+          },
+          {
+            href: '/kanban?filtro=urgentes',
+            rotulo: 'Evento em até 7 dias',
+            contador: talvez(c.atendimentos.urgentes),
+            alerta: c.atendimentos.urgentes > 0,
+          },
+          {
+            href: '/kanban?filtro=pendencias',
+            rotulo: 'Checklist incompleto',
+            contador: talvez(c.atendimentos.pendencias),
+            alerta: c.atendimentos.pendencias > 0,
+          },
         ],
       },
       {
         titulo: 'Interesse',
-        itens: [
-          { href: '/kanban?necessidade=aluguel', rotulo: 'Aluguel', contador: 5 },
-          { href: '/kanban?necessidade=terno-sob-medida', rotulo: 'Terno sob medida', contador: 4 },
-          { href: '/kanban?necessidade=camisa-sob-medida', rotulo: 'Camisa sob medida', contador: 1 },
-          { href: '/kanban?necessidade=ajuste', rotulo: 'Ajuste / conserto', contador: 1 },
-        ],
+        itens: (Object.keys(NECESSIDADES) as Necessidade[]).map((n) => ({
+          href: `/kanban?necessidade=${n}`,
+          rotulo: NECESSIDADES[n],
+          contador: talvez(c.atendimentos.porNecessidade[n]),
+        })),
       },
       {
         titulo: 'Origem do lead',
-        itens: [
-          { href: '/kanban?origem=google-ads', rotulo: 'Google Ads', contador: 3 },
-          { href: '/kanban?origem=instagram', rotulo: 'Instagram', contador: 3 },
-          { href: '/kanban?origem=indicacao', rotulo: 'Indicação', contador: 2 },
-          { href: '/kanban?origem=site', rotulo: 'Site', contador: 1 },
-        ],
+        itens: (Object.keys(ORIGENS) as OrigemLead[])
+          .filter((o) => c.atendimentos.porOrigem[o])
+          .map((o) => ({
+            href: `/kanban?origem=${o}`,
+            rotulo: ORIGENS[o],
+            contador: c.atendimentos.porOrigem[o],
+          })),
       },
     ],
   },
@@ -102,14 +140,23 @@ export const NAVEGACAO: ItemNavegacao[] = [
     icone: ListChecks,
     titulo: 'Follow-ups',
     subtitulo: 'Browns Alfaiataria',
-    distintivo: 8,
+    distintivo: talvez(c.tarefas.todas),
     secoes: [
       {
         itens: [
-          { href: '/tarefas', rotulo: 'Todas as pendências', contador: 8 },
-          { href: '/tarefas?filtro=atrasadas', rotulo: 'Atrasadas', contador: 2, alerta: true },
-          { href: '/tarefas?filtro=hoje', rotulo: 'Para hoje', contador: 1 },
-          { href: '/tarefas?filtro=concluidas', rotulo: 'Concluídas', contador: 1 },
+          { href: '/tarefas', rotulo: 'Todas as pendências', contador: talvez(c.tarefas.todas) },
+          {
+            href: '/tarefas?filtro=atrasadas',
+            rotulo: 'Atrasadas',
+            contador: talvez(c.tarefas.atrasadas),
+            alerta: c.tarefas.atrasadas > 0,
+          },
+          { href: '/tarefas?filtro=hoje', rotulo: 'Para hoje', contador: talvez(c.tarefas.hoje) },
+          {
+            href: '/tarefas?filtro=concluidas',
+            rotulo: 'Concluídas',
+            contador: talvez(c.tarefas.concluidas),
+          },
         ],
       },
     ],
@@ -123,9 +170,17 @@ export const NAVEGACAO: ItemNavegacao[] = [
     secoes: [
       {
         itens: [
-          { href: '/clientes', rotulo: 'Todos os clientes', contador: 10 },
-          { href: '/clientes?filtro=ativos', rotulo: 'Com atendimento aberto', contador: 8 },
-          { href: '/clientes?filtro=recentes', rotulo: 'Cadastrados no mês', contador: 4 },
+          { href: '/clientes', rotulo: 'Todos os clientes', contador: talvez(c.clientes.todos) },
+          {
+            href: '/clientes?filtro=ativos',
+            rotulo: 'Com atendimento aberto',
+            contador: talvez(c.clientes.ativos),
+          },
+          {
+            href: '/clientes?filtro=recentes',
+            rotulo: 'Cadastrados no mês',
+            contador: talvez(c.clientes.recentes),
+          },
         ],
       },
     ],
@@ -162,14 +217,7 @@ export const NAVEGACAO: ItemNavegacao[] = [
     rotulo: 'Notificações',
     icone: Bell,
     titulo: 'Notificações',
-    secoes: [
-      {
-        itens: [
-          { href: '/notificacoes', rotulo: 'Todas', contador: 5 },
-          { href: '/notificacoes?filtro=nao-lidas', rotulo: 'Não lidas', contador: 3 },
-        ],
-      },
-    ],
+    secoes: [{ itens: [{ href: '/notificacoes', rotulo: 'Todas' }] }],
   },
   {
     href: '/configuracoes',

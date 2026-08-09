@@ -4,14 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut } from 'lucide-react';
-import { NAVEGACAO, type ItemNavegacao } from './navegacao';
+import type { ItemNavegacao } from './navegacao';
 import { sair } from '@/app/acoes';
 import type { Sessao } from '@/lib/sessao';
 import { VERSAO } from '@/lib/versao';
 import { cn, iniciais } from '@/lib/utils';
-
-const PRINCIPAIS = NAVEGACAO.filter((i) => i.href !== '/configuracoes');
-const CONFIGURACOES = NAVEGACAO.find((i) => i.href === '/configuracoes')!;
 
 const Item = ({ item, ativo }: { item: ItemNavegacao; ativo: boolean }) => {
   const Icone = item.icone;
@@ -44,9 +41,17 @@ const Item = ({ item, ativo }: { item: ItemNavegacao; ativo: boolean }) => {
   );
 };
 
-export const BarraIcones = ({ usuario }: { usuario: Sessao }) => {
+type Props = {
+  usuario: Sessao;
+  navegacao: ItemNavegacao[];
+};
+
+export const BarraIcones = ({ usuario, navegacao }: Props) => {
   const caminho = usePathname();
   const [menuAberto, setMenuAberto] = useState(false);
+
+  const principais = navegacao.filter((i) => i.href !== '/configuracoes');
+  const configuracoes = navegacao.find((i) => i.href === '/configuracoes')!;
 
   return (
     <nav className="flex w-16 shrink-0 flex-col items-center border-r border-borda bg-superficie py-3">
@@ -59,14 +64,14 @@ export const BarraIcones = ({ usuario }: { usuario: Sessao }) => {
       </Link>
 
       <div className="flex flex-1 flex-col items-center gap-1">
-        {PRINCIPAIS.map((item) => (
+        {principais.map((item) => (
           <Item key={item.href} item={item} ativo={caminho.startsWith(item.href)} />
         ))}
       </div>
 
       <div className="relative flex flex-col items-center gap-2">
         <span className="text-[10px] font-medium text-texto-fraco">v{VERSAO}</span>
-        <Item item={CONFIGURACOES} ativo={caminho.startsWith(CONFIGURACOES.href)} />
+        <Item item={configuracoes} ativo={caminho.startsWith(configuracoes.href)} />
 
         <button
           type="button"

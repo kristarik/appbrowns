@@ -1,5 +1,10 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
 import { createInterface, type Interface } from 'node:readline';
+
+// O dotenv le apenas .env por padrao, mas a URL de producao mora no .env.local.
+// Carregado primeiro porque o dotenv nao sobrescreve o que ja esta definido.
+config({ path: '.env.local', quiet: true });
+config({ quiet: true });
 import { hash } from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../lib/gerado/prisma';

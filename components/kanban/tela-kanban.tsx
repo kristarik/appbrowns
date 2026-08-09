@@ -1,6 +1,7 @@
 'use client';
 
 import { useOptimistic, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { PanelRightClose } from 'lucide-react';
 import { Quadro } from './quadro';
 import { PainelChat } from '@/components/chat/painel-chat';
@@ -15,21 +16,22 @@ import {
 } from '@/lib/tipos';
 import { cn, formatarMoeda } from '@/lib/utils';
 
-const FILTROS: { id: Necessidade | 'todas'; rotulo: string }[] = [
-  { id: 'todas', rotulo: 'Todas' },
+const FILTROS: { id?: Necessidade; rotulo: string; href: string }[] = [
+  { rotulo: 'Todas', href: '/kanban' },
   ...(Object.entries(NECESSIDADES) as [Necessidade, string][]).map(([id, rotulo]) => ({
     id,
     rotulo,
+    href: `/kanban?necessidade=${id}`,
   })),
 ];
 
 type Props = {
   itens: ItemQuadro[];
   clientes: Cliente[];
+  necessidade?: Necessidade;
 };
 
-export const TelaKanban = ({ itens, clientes }: Props) => {
-  const [necessidade, setNecessidade] = useState<Necessidade | 'todas'>('todas');
+export const TelaKanban = ({ itens, clientes, necessidade }: Props) => {
   const [selecionado, setSelecionado] = useState<string>();
   const [detalhesAbertos, setDetalhesAbertos] = useState(false);
   const [, iniciar] = useTransition();
@@ -52,10 +54,9 @@ export const TelaKanban = ({ itens, clientes }: Props) => {
       await moverAtendimento(id, destino);
     });
 
-  const visiveis =
-    necessidade === 'todas'
-      ? otimistas
-      : otimistas.filter((i) => i.atendimento.necessidade === necessidade);
+  // A filtragem por necessidade acontece no servidor, pela URL. Aqui so
+  // repassamos o que chegou.
+  const visiveis = otimistas;
 
   const escolhido = visiveis.find((i) => i.atendimento.id === selecionado);
   const cliente = escolhido
@@ -83,10 +84,9 @@ export const TelaKanban = ({ itens, clientes }: Props) => {
 
           <div className="ml-auto flex flex-wrap items-center gap-1">
             {FILTROS.map((filtro) => (
-              <button
-                key={filtro.id}
-                type="button"
-                onClick={() => setNecessidade(filtro.id)}
+              <Link
+                key={filtro.href}
+                href={filtro.href}
                 className={cn(
                   'rounded-lg px-2.5 py-1.5 text-[13px] transition-colors',
                   necessidade === filtro.id
@@ -95,7 +95,7 @@ export const TelaKanban = ({ itens, clientes }: Props) => {
                 )}
               >
                 {filtro.rotulo}
-              </button>
+              </Link>
             ))}
 
             {painelAberto && (
@@ -117,7 +117,7 @@ export const TelaKanban = ({ itens, clientes }: Props) => {
 
         <Quadro
           itens={visiveis}
-          necessidade={necessidade === 'todas' ? undefined : necessidade}
+          necessidade={necessidade}
           selecionado={selecionado}
           aoSelecionar={setSelecionado}
           aoMover={mover}

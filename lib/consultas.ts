@@ -1,5 +1,7 @@
 import 'server-only';
 import { db } from './db';
+import { camposPendentes } from './funil';
+import { diasAte } from './utils';
 import type {
   Atendimento,
   Cliente,
@@ -89,6 +91,101 @@ export const listarMensagens = async (): Promise<Mensagem[]> => {
     enviadaPor: r.enviadaPor?.nome,
     enviadaEm: r.enviadaEm.toISOString(),
   }));
+};
+
+export type Contagens = {
+  conversas: {
+    todas: number;
+    minhas: number;
+    naoAtribuidas: number;
+    resolvidas: number;
+    porCanal: Record<string, number>;
+    porResponsavel: { nome: string; total: number }[];
+  };
+  atendimentos: {
+    todos: number;
+    meus: number;
+    urgentes: number;
+    pendencias: number;
+    porNecessidade: Record<string, number>;
+    porOrigem: Record<string, number>;
+  };
+  tarefas: { todas: number; atrasadas: number; hoje: number; concluidas: number };
+  clientes: { todos: number; ativos: number; recentes: number };
+};
+
+const contar = <T>(itens: T[], chave: (item: T) => string | undefined) => {
+  const mapa: Record<string, number> = {};
+
+  for (const item of itens) {
+    const valor = chave(item);
+    if (valor) mapa[valor] = (mapa[valor] ?? 0) + 1;
+  }
+
+  return mapa;
+};
+
+// Alimenta os numeros da barra lateral. Antes eram fixos no codigo, herdados
+// dos dados simulados, e em producao mostravam conversas que nao existiam.
+export const contarNavegacao = async (usuario: string): Promise<Contagens> => {
+  const [conversas, atendimentos, tarefas, clientes] = await Promise.all([
+    listarConversas(),
+    listarAtendimentos(),
+    listarTarefas(),
+    listarClientes(),
+  ]);
+
+  const agora = new Date();
+  const fimDoDia = new Date(agora);
+  fimDoDia.setHours(23, 59, 59, 999);
+
+  const inicioDoMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+
+  const abertos = atendimentos.filter(
+    (a) => a.etapa !== 'finalizado' && a.etapa !== 'perdido',
+  );
+
+  const responsaveis = contar(conversas, (c) => c.responsavel);
+
+  return {
+    conversas: {
+      todas: conversas.length,
+      minhas: conversas.filter((c) => c.responsavel === usuario).length,
+      naoAtribuidas: conversas.filter((c) => !c.responsavel).length,
+      resolvidas: conversas.filter((c) => c.status === 'resolvida').length,
+      porCanal: contar(conversas, (c) => c.canal),
+      porResponsavel: Object.entries(responsaveis)
+        .map(([nome, total]) => ({ nome, total }))
+        .sort((a, b) => b.total - a.total),
+    },
+    atendimentos: {
+      todos: atendimentos.length,
+      meus: atendimentos.filter((a) => a.responsavel === usuario).length,
+      urgentes: abertos.filter((a) => {
+        if (!a.dataEvento) return false;
+        const dias = diasAte(a.dataEvento);
+        return dias >= 0 && dias <= 7;
+      }).length,
+      pendencias: abertos.filter(
+        (a) => camposPendentes(a.etapa, a.dados).length > 0,
+      ).length,
+      porNecessidade: contar(atendimentos, (a) => a.necessidade),
+      porOrigem: contar(atendimentos, (a) => a.origem),
+    },
+    tarefas: {
+      todas: tarefas.filter((t) => !t.concluida).length,
+      atrasadas: tarefas.filter((t) => !t.concluida && new Date(t.venceEm) < agora).length,
+      hoje: tarefas.filter(
+        (t) => !t.concluida && new Date(t.venceEm) <= fimDoDia && new Date(t.venceEm) >= agora,
+      ).length,
+      concluidas: tarefas.filter((t) => t.concluida).length,
+    },
+    clientes: {
+      todos: clientes.length,
+      ativos: new Set(abertos.map((a) => a.clienteId)).size,
+      recentes: clientes.filter((c) => new Date(c.criadoEm) >= inicioDoMes).length,
+    },
+  };
 };
 
 export const listarTarefas = async (): Promise<Tarefa[]> => {

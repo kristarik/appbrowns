@@ -1,5 +1,40 @@
 # Histórico de versões
 
+## v0.3.2 - Números de verdade
+
+Corrige algo que só apareceu com o painel em produção: a barra lateral mostrava
+números inventados.
+
+### O problema
+
+Os contadores estavam cravados no código desde a época dos dados simulados. Numa
+instalação nova e vazia, a lateral anunciava "Todas as conversas 8", "WhatsApp
+6", "Ana 3", enquanto a lista ao lado dizia "Nenhuma conversa encontrada".
+
+Em produção isso é pior do que não ter número: dá a entender que existem oito
+conversas esperando resposta.
+
+### O que mudou
+
+Todos os contadores vêm do banco agora. Um contador zerado simplesmente não
+aparece, para uma instalação nova não virar uma parede de zeros.
+
+A lista de atendentes na lateral também é real: sai de quem tem conversa
+atribuída, em vez de nomes fixos.
+
+### Os filtros passaram a filtrar
+
+Os links da lateral levavam a URLs que as telas ignoravam. Agora funcionam:
+
+- **Chat**: minhas, não atribuídas, resolvidas, por canal e por atendente
+- **Kanban**: meus, evento em até 7 dias, checklist incompleto, por interesse e
+  por origem do lead
+- **Follow-ups**: atrasadas, para hoje, concluídas
+- **Clientes**: com atendimento aberto, cadastrados no mês
+
+Os filtros rodam no servidor, pela URL. Isso deixa cada visão com endereço
+próprio, que pode ser salvo nos favoritos ou mandado para outra pessoa.
+
 ## v0.3.1 - No ar
 
 O painel sai da máquina de desenvolvimento e passa a rodar no VPS, em container,
