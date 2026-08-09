@@ -93,6 +93,18 @@ export const listarMensagens = async (): Promise<Mensagem[]> => {
   }));
 };
 
+// O token de sessao vale 12 horas e carrega os dados do usuario dentro dele.
+// Sem conferir no banco a cada carregamento, apagar ou desativar alguem nao
+// tiraria a pessoa do sistema ate o token expirar sozinho.
+export const usuarioAtivo = async (id: string) => {
+  const usuario = await db.usuario.findUnique({
+    where: { id },
+    select: { ativo: true },
+  });
+
+  return usuario?.ativo === true;
+};
+
 export type Contagens = {
   conversas: {
     todas: number;

@@ -1,5 +1,18 @@
 # Histórico de versões
 
+## v0.3.4 - Sessão conferida no banco
+
+Fecha uma brecha aparentada com a da v0.3.3.
+
+O token de sessão vale 12 horas e carrega os dados do usuário dentro dele. Como
+nada era conferido no banco a cada carregamento, apagar ou desativar uma pessoa
+não a tirava do sistema: ela seguia navegando até o token expirar sozinho.
+
+Agora o painel confirma a cada carregamento que o usuário ainda existe e está
+ativo. Desativou, saiu na hora.
+
+Custa uma consulta pequena por página, ao lado das que já existiam.
+
 ## v0.3.3 - Sessão que dura
 
 Corrige o login que não se sustentava em produção: entrava, mostrava o painel, e
