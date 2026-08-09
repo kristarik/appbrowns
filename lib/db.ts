@@ -6,14 +6,28 @@ import { PrismaClient } from './gerado/prisma';
 // o limite de conexoes em poucos minutos.
 const globalParaPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-const criar = () => {
+const obter = () => {
+  if (globalParaPrisma.prisma) return globalParaPrisma.prisma;
+
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) throw new Error('DATABASE_URL não definida');
 
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  const cliente = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+
+  if (process.env.NODE_ENV !== 'production') globalParaPrisma.prisma = cliente;
+
+  return cliente;
 };
 
-export const db = globalParaPrisma.prisma ?? criar();
+// A conexao so e criada no primeiro uso, nunca ao importar o modulo. O
+// `next build` importa as paginas para analisa-las, e nesse momento nao existe
+// banco nenhum: dentro da imagem Docker a DATABASE_URL so chega no start.
+export const db = new Proxy({} as PrismaClient, {
+  get: (_alvo, propriedade) => {
+    const cliente = obter();
+    const valor = Reflect.get(cliente, propriedade, cliente);
 
-if (process.env.NODE_ENV !== 'production') globalParaPrisma.prisma = db;
+    return typeof valor === 'function' ? valor.bind(cliente) : valor;
+  },
+});
