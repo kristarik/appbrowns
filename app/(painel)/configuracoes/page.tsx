@@ -1,17 +1,16 @@
-import { EmConstrucao } from '@/components/layout/em-construcao';
+import { redirect } from 'next/navigation';
+import { TelaGeral } from '@/components/configuracoes/tela-geral';
+import { buscarConfiguracao } from '@/lib/consultas';
+import { lerSessao } from '@/lib/sessao';
 
-const PaginaConfiguracoes = () => (
-  <EmConstrucao
-    titulo="Configurações"
-    descricao="Entra junto com o banco de dados, porque tudo aqui precisa ser salvo em algum lugar."
-    previsto={[
-      'Dados da loja e logo',
-      'Credenciais do WhatsApp Cloud API',
-      'Credenciais do Bling',
-      'Usuários e permissões',
-      'Etapas do funil personalizadas',
-    ]}
-  />
-);
+const PaginaGeral = async () => {
+  const usuario = await lerSessao();
 
-export default PaginaConfiguracoes;
+  if (!usuario) redirect('/login');
+
+  const configuracao = await buscarConfiguracao();
+
+  return <TelaGeral configuracao={configuracao} usuario={usuario} />;
+};
+
+export default PaginaGeral;

@@ -94,6 +94,26 @@ model Usuario {
   mensagens    Mensagem[]
 }
 
+// Linha unica, com id fixo "unica". Guardar como tabela em vez de arquivo
+// permite trocar o nome e a cor pelo painel, sem novo deploy.
+model Configuracao {
+  id           String   @id @default("unica")
+  nomeLoja     String   @default("Browns Alfaiataria")
+  corMarca     String   @default("#1b6df0")
+  logoUrl      String?
+  atualizadoEm DateTime @updatedAt
+}
+
+model Integracao {
+  // "whatsapp" ou "bling"
+  id           String   @id
+  ativa        Boolean  @default(false)
+  // Credenciais criptografadas com AES-256-GCM antes de chegar aqui. Um dump do
+  // banco vazado nao entrega o token do WhatsApp de quem o roubou.
+  dados        Json     @default("{}")
+  atualizadoEm DateTime @updatedAt
+}
+
 model Cliente {
   id          String   @id @default(cuid())
   nome        String

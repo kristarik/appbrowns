@@ -1,5 +1,57 @@
 # Histórico de versões
 
+## v0.4.0 - Configurações
+
+As Configurações eram uma tela de aviso, sem nada funcional. Agora são quatro
+telas que salvam de verdade.
+
+### Geral
+
+- **Nome da loja**, que aparece na barra lateral e no título
+- **Cor da marca**, com seletor visual. Aplica na hora em todo o painel: os três
+  tons (cor, hover e fundo de item selecionado) são derivados de um valor só
+- **Logo**, por enquanto pelo endereço da imagem. Envio de arquivo entra quando
+  o painel tiver armazenamento próprio
+- **Meu perfil** e **trocar minha senha**, disponíveis para qualquer usuário
+
+Trocar a senha exige a senha atual. Sem isso, quem passasse pelo computador
+destravado tomaria a conta.
+
+### Equipe
+
+Adicionar pessoas, alternar entre administrador e atendente, desativar e
+reativar. Desativar tira a pessoa do sistema na hora, não no próximo login.
+
+Duas travas: ninguém desativa ou rebaixa a si mesmo, e o último administrador
+ativo não pode ser removido. Sem elas o painel ficaria sem ninguém capaz de
+gerenciar equipe e integrações.
+
+### Integrações
+
+Campos para WhatsApp Cloud API e Bling.
+
+As credenciais são **criptografadas com AES-256-GCM** antes de ir para o banco.
+Um backup vazado não entrega o token do WhatsApp de quem o roubou. E nunca
+voltam para a tela: o formulário mostra só os quatro últimos caracteres, e campo
+em branco mantém o valor salvo.
+
+Salvar credencial ainda não liga nada. É o primeiro passo, e a tela diz isso.
+
+### Etapas do funil
+
+Somente leitura, mostrando as nove etapas com seus checklists e follow-ups.
+
+Editar exigiria migrar o funil do código para o banco, e um atendimento em
+andamento não pode perder a etapa no meio do caminho. Ficou para uma versão
+dedicada, e a tela explica isso em vez de fingir que funciona.
+
+### Detalhe que só o build pega
+
+Um arquivo com `'use server'` só pode exportar funções assíncronas. Eu exportava
+também a lista de campos das integrações, e a página quebrava em branco.
+TypeScript e lint passavam limpos: só `next build` acusa. Passou a fazer parte
+da verificação antes de publicar.
+
 ## v0.3.4 - Sessão conferida no banco
 
 Fecha uma brecha aparentada com a da v0.3.3.

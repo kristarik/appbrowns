@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import type { ItemNavegacao } from './navegacao';
 import { sair } from '@/app/acoes';
+import type { ConfiguracaoGeral } from '@/lib/consultas';
 import type { Sessao } from '@/lib/sessao';
 import { VERSAO } from '@/lib/versao';
 import { cn, iniciais } from '@/lib/utils';
@@ -44,9 +45,10 @@ const Item = ({ item, ativo }: { item: ItemNavegacao; ativo: boolean }) => {
 type Props = {
   usuario: Sessao;
   navegacao: ItemNavegacao[];
+  configuracao: ConfiguracaoGeral;
 };
 
-export const BarraIcones = ({ usuario, navegacao }: Props) => {
+export const BarraIcones = ({ usuario, navegacao, configuracao }: Props) => {
   const caminho = usePathname();
   const [menuAberto, setMenuAberto] = useState(false);
 
@@ -57,10 +59,19 @@ export const BarraIcones = ({ usuario, navegacao }: Props) => {
     <nav className="flex w-16 shrink-0 flex-col items-center border-r border-borda bg-superficie py-3">
       <Link
         href="/chat"
-        className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-texto text-sm font-semibold tracking-tight text-white"
-        title="Browns Alfaiataria"
+        title={configuracao.nomeLoja}
+        className="mb-4 flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-texto text-sm font-semibold tracking-tight text-white"
       >
-        B
+        {configuracao.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={configuracao.logoUrl}
+            alt={configuracao.nomeLoja}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          configuracao.nomeLoja.charAt(0).toUpperCase()
+        )}
       </Link>
 
       <div className="flex flex-1 flex-col items-center gap-1">

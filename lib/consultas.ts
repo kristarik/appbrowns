@@ -1,6 +1,7 @@
 import 'server-only';
 import { db } from './db';
 import { camposPendentes } from './funil';
+import { decifrar, mascarar } from './cripto';
 import { diasAte } from './utils';
 import type {
   Atendimento,
@@ -8,6 +9,7 @@ import type {
   Conversa,
   DadosEtapa,
   Mensagem,
+  Papel,
   Tarefa,
 } from './tipos';
 
@@ -91,6 +93,72 @@ export const listarMensagens = async (): Promise<Mensagem[]> => {
     enviadaPor: r.enviadaPor?.nome,
     enviadaEm: r.enviadaEm.toISOString(),
   }));
+};
+
+export type ConfiguracaoGeral = {
+  nomeLoja: string;
+  corMarca: string;
+  logoUrl?: string;
+};
+
+export const buscarConfiguracao = async (): Promise<ConfiguracaoGeral> => {
+  // upsert em vez de findUnique para a primeira abertura do painel nao precisar
+  // de um seed so para criar esta linha.
+  const registro = await db.configuracao.upsert({
+    where: { id: 'unica' },
+    update: {},
+    create: { id: 'unica' },
+  });
+
+  return {
+    nomeLoja: registro.nomeLoja,
+    corMarca: registro.corMarca,
+    logoUrl: registro.logoUrl ?? undefined,
+  };
+};
+
+export type UsuarioDaEquipe = {
+  id: string;
+  nome: string;
+  email: string;
+  papel: Papel;
+  ativo: boolean;
+  criadoEm: string;
+};
+
+export const listarUsuarios = async (): Promise<UsuarioDaEquipe[]> => {
+  const registros = await db.usuario.findMany({ orderBy: { criadoEm: 'asc' } });
+
+  return registros.map((r) => ({
+    id: r.id,
+    nome: r.nome,
+    email: r.email,
+    papel: r.papel,
+    ativo: r.ativo,
+    criadoEm: r.criadoEm.toISOString(),
+  }));
+};
+
+export type IntegracaoResumo = {
+  id: string;
+  ativa: boolean;
+  // Valores ja mascarados: o segredo em si nunca chega ao navegador.
+  campos: Record<string, string>;
+};
+
+export const listarIntegracoes = async (): Promise<IntegracaoResumo[]> => {
+  const registros = await db.integracao.findMany();
+
+  return registros.map((r) => {
+    const guardados = (r.dados ?? {}) as Record<string, string>;
+    const campos: Record<string, string> = {};
+
+    for (const [chave, valor] of Object.entries(guardados)) {
+      campos[chave] = mascarar(decifrar(valor));
+    }
+
+    return { id: r.id, ativa: r.ativa, campos };
+  });
 };
 
 // O token de sessao vale 12 horas e carrega os dados do usuario dentro dele.

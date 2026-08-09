@@ -33,13 +33,13 @@ export type ItemNavegacao = {
 // numa instalacao nova.
 const talvez = (total?: number) => (total ? total : undefined);
 
-export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
+export const montarNavegacao = (c: Contagens, nomeLoja: string): ItemNavegacao[] => [
   {
     href: '/chat',
     rotulo: 'Chat',
     icone: MessageCircle,
     titulo: 'Conversas',
-    subtitulo: 'Browns Alfaiataria',
+    subtitulo: nomeLoja,
     distintivo: talvez(c.conversas.todas - c.conversas.resolvidas),
     secoes: [
       {
@@ -86,7 +86,7 @@ export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
     rotulo: 'Kanban',
     icone: Columns3,
     titulo: 'Funil de atendimento',
-    subtitulo: 'Browns Alfaiataria',
+    subtitulo: nomeLoja,
     secoes: [
       {
         itens: [
@@ -139,7 +139,7 @@ export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
     rotulo: 'Follow-ups',
     icone: ListChecks,
     titulo: 'Follow-ups',
-    subtitulo: 'Browns Alfaiataria',
+    subtitulo: nomeLoja,
     distintivo: talvez(c.tarefas.todas),
     secoes: [
       {
@@ -166,7 +166,7 @@ export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
     rotulo: 'Clientes',
     icone: Users,
     titulo: 'Clientes',
-    subtitulo: 'Browns Alfaiataria',
+    subtitulo: nomeLoja,
     secoes: [
       {
         itens: [
@@ -190,7 +190,7 @@ export const montarNavegacao = (c: Contagens): ItemNavegacao[] => [
     rotulo: 'Relatórios',
     icone: ChartColumn,
     titulo: 'Relatórios',
-    subtitulo: 'Browns Alfaiataria',
+    subtitulo: nomeLoja,
     secoes: [
       {
         titulo: 'Comercial',
