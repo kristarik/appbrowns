@@ -45,7 +45,10 @@ services:
       GADS_CLIENT_ID: ${GADS_CLIENT_ID:-}
       GADS_CLIENT_SECRET: ${GADS_CLIENT_SECRET:-}
       GADS_CUSTOMER_ID: ${GADS_CUSTOMER_ID:-}
+      # Vazio significa acesso direto a conta. Preenchido com a MCC, o Google
+      # recusa com 403 quando a conta nao esta sob ela.
       GADS_LOGIN_CUSTOMER_ID: ${GADS_LOGIN_CUSTOMER_ID:-}
+      GADS_REFRESH_TOKEN: ${GADS_REFRESH_TOKEN:-}
     volumes:
       # Somente leitura e por fora da imagem, para o segredo nao viajar junto
       # caso a imagem seja copiada para outro lugar.
