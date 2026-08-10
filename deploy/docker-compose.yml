@@ -49,6 +49,9 @@ services:
       # recusa com 403 quando a conta nao esta sob ela.
       GADS_LOGIN_CUSTOMER_ID: ${GADS_LOGIN_CUSTOMER_ID:-}
       GADS_REFRESH_TOKEN: ${GADS_REFRESH_TOKEN:-}
+
+      # Chave que o agendamento usa para chamar /api/sincronizar.
+      CRON_SECRET: ${CRON_SECRET:-}
     volumes:
       # Somente leitura e por fora da imagem, para o segredo nao viajar junto
       # caso a imagem seja copiada para outro lugar.

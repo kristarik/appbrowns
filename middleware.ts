@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLICAS = ['/login'];
+// A rota de sincronização não tem sessão porque quem chama é o agendamento do
+// servidor. Ela se protege sozinha, conferindo a chave no cabeçalho.
+const PUBLICAS = ['/login', '/api/sincronizar'];
 
 // Checagem barata: so confirma que existe um cookie de sessao, sem validar a
 // assinatura, porque o middleware roda no runtime edge e verificar o JWT aqui
