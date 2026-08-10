@@ -69,6 +69,30 @@ Logs do painel:
 cd /opt/browns/painel/deploy && docker compose logs -f painel
 ```
 
+## Sincronização do marketing
+
+As métricas de Google Analytics, Search Console e Google Ads são atualizadas
+todo dia às 3h da manhã, horário de São Paulo.
+
+- Agendamento: `crontab -l` no servidor
+- Script: `/opt/browns/sincronizar-marketing.sh`
+- Registro: `/var/log/browns-marketing.log`
+
+O script chama `POST /api/sincronizar`, protegida pela chave `CRON_SECRET` que
+está no `.env` do deploy.
+
+Rodar na mão, sem esperar a madrugada:
+
+```bash
+/opt/browns/sincronizar-marketing.sh && tail -3 /var/log/browns-marketing.log
+```
+
+Também dá para atualizar pelo botão "Atualizar agora", dentro do relatório de
+marketing.
+
+Se o Search Console aparecer sempre com menos dias que o resto, é o
+comportamento esperado: ele consolida com três dias de atraso.
+
 ## Backup do banco
 
 Manual:
