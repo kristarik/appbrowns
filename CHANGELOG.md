@@ -1,5 +1,34 @@
 # Histórico de versões
 
+## v0.7.0 - HTTPS no domínio
+
+O painel sai do endereço de IP e passa a atender em
+**https://app.alfaiatariabrowns.com.br**, com certificado válido.
+
+### Como ficou
+
+- **Caddy** como proxy reverso, emitindo e renovando o certificado sozinho
+- Certificado Let's Encrypt, válido até 8 de novembro de 2026
+- Quem entrar por `http://` é redirecionado para `https://`
+- O painel agora escuta apenas em `127.0.0.1:3000`. Sem isso, daria para
+  acessar por `http://IP:3000` e contornar o certificado
+
+### O cookie voltou a ser Secure
+
+Na v0.3.3 o cookie de sessão teve que perder a marca `Secure`, porque o painel
+era servido em `http://` e o navegador descartava. Com o `SERVER_URL` apontando
+para `https://`, a proteção volta sozinha, exatamente como foi projetado.
+
+Testado com um usuário descartável: login, navegação entre telas e recarga
+completa da página, tudo mantendo a sessão. O usuário foi removido depois.
+
+### Detalhe do DNS
+
+O subdomínio já existia e apontava para a hospedagem antiga, em IPv4 e IPv6.
+Os dois registros precisaram mudar. Deixar o `AAAA` para trás causa um problema
+difícil de diagnosticar: metade dos acessos vai por IPv6, então o painel
+funciona para umas pessoas e não para outras, sem padrão aparente.
+
 ## v0.6.2 - Marca no login
 
 A tela de login mostrava a letra "B" provisória porque fica fora do painel e não

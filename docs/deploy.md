@@ -2,9 +2,38 @@
 
 O painel roda no VPS em container, junto do Postgres.
 
+- Endereço: **https://app.alfaiatariabrowns.com.br**
 - Servidor: `179.198.114.184`
 - Pasta: `/opt/browns/painel`
 - Configuração: `/opt/browns/painel/deploy/.env`
+
+## HTTPS
+
+Quem atende na porta 443 é o **Caddy**, instalado no servidor (não em
+container). Ele emite e renova o certificado sozinho.
+
+- Configuração: `/etc/caddy/Caddyfile`
+- Acessos e erros: `journalctl -u caddy`
+- Estado: `systemctl status caddy`
+
+O painel escuta apenas em `127.0.0.1:3000`, então só o Caddy alcança. Trocar
+essa amarração no `docker-compose.yml` reabriria o acesso sem certificado.
+
+O `SERVER_URL` no `.env` precisa acompanhar o endereço real: é dele que sai a
+decisão de marcar o cookie de sessão como `Secure`. Apontando para `http://`,
+o login para de funcionar em produção.
+
+### DNS
+
+`app.alfaiatariabrowns.com.br` tem dois registros, e os dois apontam para o VPS:
+
+| Tipo | Valor |
+|---|---|
+| A | 179.198.114.184 |
+| AAAA | 2a02:4780:6e:67d6::1 |
+
+Se um dia o painel funcionar para umas pessoas e não para outras, confira o
+`AAAA` antes de qualquer outra coisa: metade dos acessos sai por IPv6.
 
 O arquivo `.env` do servidor guarda a senha do banco e o `AUTH_SECRET`. Ele
 nunca vai para o Git.
