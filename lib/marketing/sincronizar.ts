@@ -4,20 +4,27 @@ import type { FonteMetrica } from '../gerado/prisma';
 
 type Ponto = { fonte: FonteMetrica; data: Date; metrica: string; valor: number };
 
+const LOTE = 200;
+
 const gravar = async (pontos: Ponto[]) => {
   if (pontos.length === 0) return 0;
 
   // Reimportar os mesmos dias corrige lacunas e valores que o Google ajusta
   // depois, entao a gravacao sobrescreve em vez de ignorar duplicata.
-  await db.$transaction(
-    pontos.map((p) =>
-      db.metricaDiaria.upsert({
-        where: { fonte_data_metrica: { fonte: p.fonte, data: p.data, metrica: p.metrica } },
-        update: { valor: p.valor },
-        create: { fonte: p.fonte, data: p.data, metrica: p.metrica, valor: p.valor },
-      }),
-    ),
-  );
+  //
+  // Em lotes: uma transacao unica com milhares de comandos segura a conexao
+  // por muito tempo e arrisca estourar o tempo limite do banco.
+  for (let i = 0; i < pontos.length; i += LOTE) {
+    await db.$transaction(
+      pontos.slice(i, i + LOTE).map((p) =>
+        db.metricaDiaria.upsert({
+          where: { fonte_data_metrica: { fonte: p.fonte, data: p.data, metrica: p.metrica } },
+          update: { valor: p.valor },
+          create: { fonte: p.fonte, data: p.data, metrica: p.metrica, valor: p.valor },
+        }),
+      ),
+    );
+  }
 
   return pontos.length;
 };

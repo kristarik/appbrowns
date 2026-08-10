@@ -1,5 +1,38 @@
 # Histórico de versões
 
+## v0.6.1 - Conexões com o banco
+
+Corrige um problema sério de produção, descoberto ao ligar o agendamento.
+
+### O que estava errado
+
+O painel guardava a instância do banco apenas fora de produção. **Em produção,
+cada acesso ao `db` criava um cliente novo, com um pool de conexões próprio.**
+
+O sintoma custou a aparecer porque cada tela faz poucas operações. A
+sincronização de marketing, que faz centenas seguidas, estourou o limite do
+Postgres com `too many clients already`.
+
+Agora a instância é guardada no módulo, uma por processo. O global continua
+sendo usado só em desenvolvimento, onde o Next recarrega os módulos a cada
+alteração.
+
+Vale como aviso: era um vazamento silencioso, que ia degradar o painel
+conforme o uso crescesse.
+
+### Gravação em lotes
+
+A sincronização gravava tudo numa transação única. Com milhares de comandos,
+isso segura a conexão por muito tempo e arrisca estourar o tempo limite. Passou
+a gravar em lotes de 200.
+
+### Agendamento
+
+Rota `/api/sincronizar`, protegida por chave própria em vez de sessão, porque
+quem chama é o agendamento do servidor. A comparação da chave é de tempo
+constante, para o tempo de resposta não entregar quantos caracteres estavam
+certos.
+
 ## v0.6.0 - Marketing ao vivo
 
 Os relatórios estão completos. As três fontes do Google leem direto da API, sem
