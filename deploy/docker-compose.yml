@@ -57,7 +57,10 @@ services:
       # caso a imagem seja copiada para outro lugar.
       - ../segredos:/app/segredos:ro
     ports:
-      - '3000:3000'
+      # So em 127.0.0.1: quem fala com o painel e o Caddy, que roda na propria
+      # maquina e cuida do HTTPS. Sem isto, daria para acessar por
+      # http://IP:3000 e contornar o certificado.
+      - '127.0.0.1:3000:3000'
     depends_on:
       db:
         condition: service_healthy
