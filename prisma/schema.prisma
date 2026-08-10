@@ -98,10 +98,14 @@ model Usuario {
 // Linha unica, com id fixo "unica". Guardar como tabela em vez de arquivo
 // permite trocar o nome e a cor pelo painel, sem novo deploy.
 model Configuracao {
-  id           String   @id @default("unica")
-  nomeLoja     String   @default("Browns Alfaiataria")
-  corMarca     String   @default("#1b6df0")
-  logoUrl      String?
+  id       String @id @default("unica")
+  nomeLoja String @default("Browns Alfaiataria")
+  // Paleta oficial da Browns: marrom e creme. O creme e um campo proprio porque
+  // clarear o marrom por calculo da um cinza morno, nao o creme da marca.
+  corMarca String @default("#4d322e")
+  corSuave String @default("#fae9db")
+  logoUrl  String? @default("/marca/logo.svg")
+
   atualizadoEm DateTime @updatedAt
 }
 

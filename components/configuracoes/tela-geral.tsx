@@ -20,6 +20,7 @@ type Props = {
 
 export const TelaGeral = ({ configuracao, usuario }: Props) => {
   const [cor, setCor] = useState(configuracao.corMarca);
+  const [suave, setSuave] = useState(configuracao.corSuave);
   const [geral, acaoGeral, salvandoGeral] = useActionState<Resultado, FormData>(
     salvarGeral,
     {},
@@ -56,14 +57,14 @@ export const TelaGeral = ({ configuracao, usuario }: Props) => {
             />
           </Campo>
 
-          <Campo rotulo="Cor da marca" ajuda="Usada nos destaques, botões e itens selecionados.">
+          <Campo rotulo="Cor principal" ajuda="Botões, destaques e texto selecionado.">
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={cor}
                 onChange={(e) => setCor(e.target.value)}
                 disabled={!admin}
-                aria-label="Escolher cor"
+                aria-label="Escolher cor principal"
                 className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-borda bg-fundo"
               />
               <input
@@ -77,16 +78,37 @@ export const TelaGeral = ({ configuracao, usuario }: Props) => {
             </div>
           </Campo>
 
+          <Campo rotulo="Cor de fundo" ajuda="Fundo dos itens selecionados no menu e nas listas.">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={suave}
+                onChange={(e) => setSuave(e.target.value)}
+                disabled={!admin}
+                aria-label="Escolher cor de fundo"
+                className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-borda bg-fundo"
+              />
+              <input
+                name="corSuave"
+                value={suave}
+                onChange={(e) => setSuave(e.target.value)}
+                disabled={!admin}
+                required
+                className={`${entrada} font-mono`}
+              />
+            </div>
+          </Campo>
+
           <Campo
-            rotulo="Logo (endereço da imagem)"
-            ajuda="Cole o link de um PNG ou SVG. Envio de arquivo entra quando o painel tiver armazenamento próprio."
+            rotulo="Logo"
+            ajuda="A logo da Browns já vem no painel em /marca/logo.svg. Para trocar, cole o endereço de outra imagem."
           >
             <input
               name="logoUrl"
-              type="url"
+              type="text"
               defaultValue={configuracao.logoUrl ?? ''}
               disabled={!admin}
-              placeholder="https://..."
+              placeholder="/marca/logo.svg"
               className={entrada}
             />
           </Campo>

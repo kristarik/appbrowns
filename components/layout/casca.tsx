@@ -6,7 +6,7 @@ import { Sidebar } from './sidebar';
 import { montarNavegacao } from './navegacao';
 import type { Contagens, ConfiguracaoGeral } from '@/lib/consultas';
 import type { Sessao } from '@/lib/sessao';
-import { tomClaro, tomEscuro } from '@/lib/utils';
+import { tomEscuro } from '@/lib/utils';
 
 type Props = {
   usuario: Sessao;
@@ -26,7 +26,7 @@ export const Casca = ({ usuario, contagens, configuracao, children }: Props) => 
   // e validado como #rrggbb na acao que salva, entao nao ha injecao possivel.
   const tema = `:root{--marca:${configuracao.corMarca};--marca-escura:${tomEscuro(
     configuracao.corMarca,
-  )};--marca-fraca:${tomClaro(configuracao.corMarca)}}`;
+  )};--marca-fraca:${configuracao.corSuave}}`;
 
   return (
     <div className="flex h-dvh overflow-hidden bg-fundo">

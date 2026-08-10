@@ -1,5 +1,50 @@
 # Histórico de versões
 
+## v0.5.0 - Relatório comercial e identidade da marca
+
+### Relatório comercial, com dados reais
+
+Cinco abas, todas saindo do banco do painel, sem depender de integração
+nenhuma. Filtro de período em 30 dias, 90 dias, 12 meses ou tudo.
+
+- **Visão geral**: valor em negociação, faturamento, ticket médio e conversão,
+  mais faturamento por mês do evento e recorte por interesse e ocasião
+- **Conversão por etapa**: quantidade e valor parados em cada uma das nove etapas
+- **Por interesse**: serviço, ocasião e origem do lead
+- **Motivos de perda**: preço, estoque, prazo, concorrência, sem retorno
+- **Por atendente**: atendimentos, ganhos, conversão e faturamento
+
+Os gráficos são CSS puro. Uma biblioteca de gráficos aqui adicionaria centenas
+de kilobytes ao navegador para desenhar retângulos proporcionais.
+
+**A conversão considera só quem já terminou.** Quem ainda está no funil não
+conta como perda, senão a taxa despencaria sem motivo real. A tela explica isso.
+
+### Marketing: credenciais no lugar
+
+Trouxe do projeto `brownsreport` as credenciais de Google Analytics 4, Search
+Console e Google Ads. Ficam no `.env.local` e a chave da conta de serviço em
+`segredos/`, ambos fora do Git.
+
+A aba de Marketing mostra o que já está configurado e o que falta em cada fonte.
+Ler os dados de verdade é o próximo passo: GA4 e Search Console usam conta de
+serviço e saem sem sua participação; Google Ads precisa de uma autorização
+única feita por você no navegador.
+
+### Identidade da Browns
+
+A marca saiu do provisório:
+
+- Logo oficial em `public/marca/logo.svg`, no lugar da letra "B"
+- Marrom `#4d322e` como cor principal
+- Creme `#fae9db` como cor de fundo dos itens selecionados
+
+O creme virou um campo próprio na configuração. Clarear o marrom por cálculo
+dava um cinza morno, não o creme da marca.
+
+Os comandos `npm run marca` e `npm run marca:producao` aplicam a paleta, e só
+mexem se a cor ainda estiver no azul de fábrica.
+
 ## v0.4.1 - Três papéis
 
 Entra o papel de **Gerente**, entre o administrador e o atendente.

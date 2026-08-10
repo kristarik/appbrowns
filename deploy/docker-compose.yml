@@ -36,6 +36,20 @@ services:
       # Define se o cookie de sessao sai marcado como Secure. Trocar para o
       # endereco https quando o dominio entrar, senao o login para de funcionar.
       SERVER_URL: ${SERVER_URL:-http://179.198.114.184:3000}
+
+      # Google: leitura de Analytics, Search Console e Ads.
+      GOOGLE_SA_KEY_PATH: /app/segredos/google-service-account.json
+      GA4_PROPERTY_ID: ${GA4_PROPERTY_ID:-}
+      GSC_SITE_URL: ${GSC_SITE_URL:-}
+      GADS_DEVELOPER_TOKEN: ${GADS_DEVELOPER_TOKEN:-}
+      GADS_CLIENT_ID: ${GADS_CLIENT_ID:-}
+      GADS_CLIENT_SECRET: ${GADS_CLIENT_SECRET:-}
+      GADS_CUSTOMER_ID: ${GADS_CUSTOMER_ID:-}
+      GADS_LOGIN_CUSTOMER_ID: ${GADS_LOGIN_CUSTOMER_ID:-}
+    volumes:
+      # Somente leitura e por fora da imagem, para o segredo nao viajar junto
+      # caso a imagem seja copiada para outro lugar.
+      - ../segredos:/app/segredos:ro
     ports:
       - '3000:3000'
     depends_on:

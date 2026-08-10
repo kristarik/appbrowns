@@ -56,13 +56,21 @@ const restariaSemAdmin = async (idAlvo: string) => {
 
 // ———————————————————————— Geral ————————————————————————
 
-const entradaGeral = z.object({
-  nomeLoja: z.string().trim().min(1, 'Informe o nome da loja').max(60),
-  corMarca: z
+const cor = (rotulo: string) =>
+  z
     .string()
     .trim()
-    .regex(/^#[0-9a-fA-F]{6}$/, 'A cor precisa estar no formato #1b6df0'),
-  logoUrl: z.string().trim().url('URL inválida').or(z.literal('')),
+    .regex(/^#[0-9a-fA-F]{6}$/, `${rotulo} precisa estar no formato #4d322e`);
+
+const entradaGeral = z.object({
+  nomeLoja: z.string().trim().min(1, 'Informe o nome da loja').max(60),
+  corMarca: cor('A cor principal'),
+  corSuave: cor('A cor de fundo'),
+  // Aceita endereco completo ou caminho interno como /marca/logo.svg.
+  logoUrl: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || v.startsWith('/') || /^https?:\/\//.test(v), 'Endereço inválido'),
 });
 
 export const salvarGeral = async (
@@ -76,24 +84,23 @@ export const salvarGeral = async (
   const dados = entradaGeral.safeParse({
     nomeLoja: formulario.get('nomeLoja'),
     corMarca: formulario.get('corMarca'),
+    corSuave: formulario.get('corSuave'),
     logoUrl: formulario.get('logoUrl') ?? '',
   });
 
   if (!dados.success) return { erro: dados.error.issues[0].message };
 
+  const valores = {
+    nomeLoja: dados.data.nomeLoja,
+    corMarca: dados.data.corMarca,
+    corSuave: dados.data.corSuave,
+    logoUrl: dados.data.logoUrl || null,
+  };
+
   await db.configuracao.upsert({
     where: { id: 'unica' },
-    update: {
-      nomeLoja: dados.data.nomeLoja,
-      corMarca: dados.data.corMarca,
-      logoUrl: dados.data.logoUrl || null,
-    },
-    create: {
-      id: 'unica',
-      nomeLoja: dados.data.nomeLoja,
-      corMarca: dados.data.corMarca,
-      logoUrl: dados.data.logoUrl || null,
-    },
+    update: valores,
+    create: { id: 'unica', ...valores },
   });
 
   revalidatePath('/', 'layout');

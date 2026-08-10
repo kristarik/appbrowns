@@ -1,3 +1,3 @@
-export const VERSAO = '0.4.1';
+export const VERSAO = '0.5.0';
 
-export const VERSAO_NOME = 'Três papéis';
+export const VERSAO_NOME = 'Relatório comercial';

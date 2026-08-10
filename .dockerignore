@@ -4,6 +4,9 @@ node_modules
 .env
 .env.*
 lib/gerado
+# A chave do Google entra por volume no compose, nunca dentro da imagem: imagem
+# e copiada e enviada, e um segredo embutido viaja junto sem ninguem perceber.
+segredos
 docs
 *.md
 .claude

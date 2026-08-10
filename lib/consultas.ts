@@ -98,6 +98,7 @@ export const listarMensagens = async (): Promise<Mensagem[]> => {
 export type ConfiguracaoGeral = {
   nomeLoja: string;
   corMarca: string;
+  corSuave: string;
   logoUrl?: string;
 };
 
@@ -113,6 +114,7 @@ export const buscarConfiguracao = async (): Promise<ConfiguracaoGeral> => {
   return {
     nomeLoja: registro.nomeLoja,
     corMarca: registro.corMarca,
+    corSuave: registro.corSuave,
     logoUrl: registro.logoUrl ?? undefined,
   };
 };
