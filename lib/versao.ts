@@ -1,3 +1,3 @@
-export const VERSAO = '0.6.1';
+export const VERSAO = '0.6.2';
 
-export const VERSAO_NOME = 'Marketing ao vivo';
+export const VERSAO_NOME = 'Marca no login';

@@ -1,5 +1,22 @@
 # Histórico de versões
 
+## v0.6.2 - Marca no login
+
+A tela de login mostrava a letra "B" provisória porque fica fora do painel e não
+lia a configuração. Agora carrega a logo, as cores da Browns e o nome da loja,
+tudo do banco, igual ao resto.
+
+O título da aba também mudou, de "Painel Browns Alfaiataria" para
+"Entrar · Browns Alfaiataria".
+
+Trocar a logo em Configurações passa a valer também aqui.
+
+### Uma proteção que veio junto
+
+Como a tela agora consulta o banco, uma falha de conexão trocaria a porta de
+entrada por uma tela de erro. Se a consulta falhar, ela cai nos valores padrão
+da Browns e o formulário abre assim mesmo.
+
 ## v0.6.1 - Conexões com o banco
 
 Corrige um problema sério de produção, descoberto ao ligar o agendamento.
