@@ -119,6 +119,48 @@ model Integracao {
   atualizadoEm DateTime @updatedAt
 }
 
+enum FonteMetrica {
+  ga4
+  google_ads
+  gsc
+}
+
+// Formato comprido, uma linha por metrica e por dia. Cada fonte tem metricas
+// diferentes, e colunas fixas obrigariam migracao a cada metrica nova.
+model MetricaDiaria {
+  id      BigInt       @id @default(autoincrement())
+  fonte   FonteMetrica
+  data    DateTime     @db.Date
+  metrica String
+  valor   Decimal      @db.Decimal(16, 4)
+
+  @@unique([fonte, data, metrica])
+  @@index([fonte, data])
+}
+
+// Termos de busca do Search Console. Ficam separados das metricas diarias
+// porque sao muitos por dia e tem dimensoes proprias.
+model TermoBusca {
+  id         BigInt   @id @default(autoincrement())
+  // "query" ou "page"
+  dimensao   String
+  data       DateTime @db.Date
+  termo      String   @db.VarChar(600)
+  cliques    Int      @default(0)
+  impressoes Int      @default(0)
+  posicao    Decimal  @db.Decimal(7, 2)
+
+  @@unique([dimensao, data, termo])
+  @@index([dimensao, data])
+}
+
+model SincronizacaoMarketing {
+  id         String    @id @default("unica")
+  rodadaEm   DateTime?
+  resultado  String?
+  comErro    Boolean   @default(false)
+}
+
 model Cliente {
   id          String   @id @default(cuid())
   nome        String

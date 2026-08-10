@@ -135,19 +135,28 @@ export const Funil = ({
 
 export const Colunas = ({
   meses,
+  moeda = true,
+  vazio = 'Nenhuma venda finalizada no período',
 }: {
   meses: { rotulo: string; total: number; valor: number }[];
+  moeda?: boolean;
+  vazio?: string;
 }) => {
-  if (meses.length === 0) return <Vazio texto="Nenhuma venda finalizada no período" />;
+  if (meses.length === 0) return <Vazio texto={vazio} />;
 
   const maior = Math.max(...meses.map((m) => m.valor), 1);
+
+  const rotular = (valor: number) =>
+    moeda
+      ? formatarMoeda(valor).replace('R$ ', '')
+      : valor.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
   return (
     <div className="flex h-44 items-end gap-2">
       {meses.map((mes) => (
         <div key={mes.rotulo} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
           <span className="text-[10px] text-texto-suave tabular-nums">
-            {mes.valor > 0 ? formatarMoeda(mes.valor).replace('R$ ', '') : ''}
+            {mes.valor > 0 ? rotular(mes.valor) : ''}
           </span>
           <div
             className="w-full rounded-t-md bg-marca transition-all"

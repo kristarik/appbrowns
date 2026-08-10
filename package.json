@@ -13,6 +13,9 @@
     "db:studio": "prisma studio",
     "usuario": "tsx prisma/criar-usuario.ts",
     "usuario:producao": "cross-env PRODUCAO=1 tsx prisma/criar-usuario.ts",
+    "sincronizar:marketing": "tsx prisma/sincronizar-marketing.ts",
+    "importar:marketing": "tsx prisma/importar-marketing.ts",
+    "importar:marketing:producao": "cross-env PRODUCAO=1 tsx prisma/importar-marketing.ts",
     "marca": "tsx prisma/aplicar-marca.ts",
     "marca:producao": "cross-env PRODUCAO=1 tsx prisma/aplicar-marca.ts"
   },
@@ -21,6 +24,7 @@
     "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "google-auth-library": "^11.0.0",
     "jose": "^6.2.8",
     "lucide-react": "^1.29.0",
     "next": "16.3.0",
@@ -42,6 +46,7 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "mysql2": "^3.23.2",
     "tailwindcss": "^4",
     "tsx": "^4.23.11",
     "typescript": "^5"

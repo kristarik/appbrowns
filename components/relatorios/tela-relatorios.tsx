@@ -1,17 +1,9 @@
 import Link from 'next/link';
 import { Barras, Bloco, Colunas, Funil, Indicador, Vazio } from './pecas';
-import { PERIODOS, type Periodo, type RelatorioComercial } from '@/lib/relatorios';
+import { ABAS_COMERCIAL as ABAS, type Aba } from '@/lib/abas-relatorio';
+import { PERIODOS, type Periodo } from '@/lib/periodos';
+import type { RelatorioComercial } from '@/lib/relatorios';
 import { cn, formatarMoeda } from '@/lib/utils';
-
-export const ABAS = [
-  { id: 'geral', rotulo: 'Visão geral' },
-  { id: 'funil', rotulo: 'Conversão por etapa' },
-  { id: 'interesse', rotulo: 'Por interesse' },
-  { id: 'perdas', rotulo: 'Motivos de perda' },
-  { id: 'equipe', rotulo: 'Por atendente' },
-] as const;
-
-export type Aba = (typeof ABAS)[number]['id'];
 
 const endereco = (aba: Aba, periodo: Periodo) =>
   `/relatorios?aba=${aba}${periodo === '90' ? '' : `&periodo=${periodo}`}`;

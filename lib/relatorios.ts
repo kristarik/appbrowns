@@ -2,15 +2,9 @@ import 'server-only';
 import { db } from './db';
 import { FUNIL } from './funil';
 import { MOTIVOS_PERDA, NECESSIDADES, OCASIOES, ORIGENS } from './tipos';
+import type { Periodo } from './periodos';
 
-export type Periodo = '30' | '90' | '365' | 'tudo';
-
-export const PERIODOS: { id: Periodo; rotulo: string }[] = [
-  { id: '30', rotulo: '30 dias' },
-  { id: '90', rotulo: '90 dias' },
-  { id: '365', rotulo: '12 meses' },
-  { id: 'tudo', rotulo: 'Tudo' },
-];
+export { PERIODOS, type Periodo } from './periodos';
 
 const desde = (periodo: Periodo) => {
   if (periodo === 'tudo') return undefined;

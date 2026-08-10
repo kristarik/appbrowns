@@ -1,5 +1,59 @@
 # Histórico de versões
 
+## v0.6.0 - Marketing ao vivo
+
+Os relatórios estão completos. As três fontes do Google leem direto da API, sem
+depender do projeto antigo em PHP.
+
+### O que foi aproveitado do brownsreport
+
+O projeto antigo guardava o refresh token do Google Ads no banco dele. Isso
+evitou uma autorização manual: as credenciais foram recuperadas de lá.
+
+Também veio **mais de um ano de histórico**, importado para o banco do painel:
+
+| Fonte | Período | Registros |
+|---|---|---|
+| Google Analytics | jun/2025 a ago/2026 | 1.716 |
+| Google Ads | jun/2025 a ago/2026 | 1.568 |
+| Search Console | jun/2026 a ago/2026 | 141 + 1.531 termos |
+
+O relatório já nasce com profundidade, em vez de começar do zero.
+
+### Leitura contínua
+
+- **Google Analytics** e **Search Console** pela conta de serviço, sem
+  participação de ninguém
+- **Google Ads** pelo refresh token recuperado
+
+Botão "Atualizar agora" no relatório, e o comando `npm run sincronizar:marketing`
+para o agendamento no servidor.
+
+A janela do Search Console termina três dias atrás de propósito: ele consolida
+com atraso, e pedir "hoje" devolveria zero, sujando o gráfico.
+
+Cada fonte sincroniza em sequência e falha isolada. Uma fonte fora do ar não
+derruba as outras, e o relatório prefere dado parcial a tela de erro.
+
+### As três telas de marketing
+
+- **Origem dos leads**: cruza o campo Origem com o funil e mostra custo por lead
+  e custo por venda
+- **Google Ads**: investido, cliques, CTR, custo por clique, conversões e
+  investimento mês a mês
+- **Acessos ao site**: sessões, usuários, páginas, mais as buscas e páginas que
+  trazem visita
+
+### Duas fronteiras que quebraram o build
+
+Coisas que TypeScript e lint não pegam, só `next build`:
+
+- Uma tela de cliente importava o módulo de relatórios, que puxa o banco junto.
+  O driver do Postgres foi parar no navegador. As listas de período e de abas
+  viraram módulos neutros
+- A página do servidor lia uma constante exportada de um módulo `'use client'`.
+  De lá o servidor só enxerga referência de componente, não o dado
+
 ## v0.5.0 - Relatório comercial e identidade da marca
 
 ### Relatório comercial, com dados reais
