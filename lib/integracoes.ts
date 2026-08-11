@@ -10,7 +10,12 @@ export const CAMPOS_INTEGRACAO: Record<string, CampoIntegracao[]> = {
   whatsapp: [
     { id: 'phoneNumberId', rotulo: 'Phone Number ID', ajuda: 'Número no painel da Meta' },
     { id: 'businessAccountId', rotulo: 'WhatsApp Business Account ID' },
-    { id: 'accessToken', rotulo: 'Token de acesso permanente' },
+    { id: 'accessToken', rotulo: 'Token de acesso' },
+    {
+      id: 'appSecret',
+      rotulo: 'App Secret',
+      ajuda: 'Configurações do app, Básico. Confirma que a mensagem veio mesmo da Meta',
+    },
     {
       id: 'verifyToken',
       rotulo: 'Verify token do webhook',

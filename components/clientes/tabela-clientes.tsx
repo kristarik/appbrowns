@@ -107,7 +107,7 @@ export const TabelaClientes = ({ clientes, atendimentos }: Props) => {
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave">
-                    {atendimento ? NECESSIDADES[atendimento.necessidade] : '—'}
+                    {atendimento?.necessidade ? NECESSIDADES[atendimento.necessidade] : '—'}
                   </td>
 
                   <td className="border-b border-borda-suave px-4 py-2.5 text-[13px] text-texto-suave">

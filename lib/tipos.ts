@@ -79,7 +79,9 @@ export type Atendimento = {
   clienteId: string;
   origem: OrigemLead;
   canal: Canal;
-  necessidade: Necessidade;
+  // Em branco quando o atendimento nasceu de uma mensagem no WhatsApp e
+  // ninguém ainda definiu o que a pessoa quer.
+  necessidade?: Necessidade;
   ocasiao?: Ocasiao;
   dataEvento?: string;
   interesseInicial?: string;

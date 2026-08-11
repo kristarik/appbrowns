@@ -1,4 +1,5 @@
-import 'server-only';
+// Sem 'server-only' de propósito: este módulo também é usado por scripts de
+// linha de comando. O uso de node:crypto já impede que ele vá ao navegador.
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 
 // Token do WhatsApp e chave do Bling nao podem ficar em texto puro no banco:

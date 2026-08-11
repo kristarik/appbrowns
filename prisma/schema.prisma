@@ -184,7 +184,10 @@ model Atendimento {
   clienteId        String
   origem           OrigemLead
   canal            Canal
-  necessidade      Necessidade
+  // Opcional porque um atendimento nascido de mensagem no WhatsApp ainda nao
+  // sabe o que a pessoa quer. Chutar um valor sujaria o relatorio, entao fica
+  // em branco ate a atendente definir.
+  necessidade      Necessidade?
   ocasiao          Ocasiao?
   dataEvento       DateTime?
   interesseInicial String?

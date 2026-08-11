@@ -1,5 +1,48 @@
 # Histórico de versões
 
+## v0.8.0 - WhatsApp recebendo
+
+O painel passa a receber mensagens do WhatsApp e transformá-las em atendimento
+sozinho.
+
+Endereço do webhook: `https://app.alfaiatariabrowns.com.br/api/whatsapp`
+
+### O que acontece quando chega uma mensagem
+
+1. O painel confere a assinatura, provando que veio da Meta
+2. Acha o cliente pelo telefone, ou cria um novo com o nome do perfil
+3. Abre a conversa no canal WhatsApp, ou reabre se estava resolvida
+4. Grava a mensagem e soma uma não lida
+5. Se o cliente não tiver atendimento em aberto, cria um na etapa Novo
+
+### Duas proteções
+
+**Assinatura.** Sem conferir, qualquer um que descobrisse o endereço poderia
+inventar clientes no painel. A conferência usa o App Secret e comparação de
+tempo constante.
+
+**Mensagem repetida.** A Meta reenvia o mesmo evento quando não recebe
+confirmação rápida. O identificador da mensagem é único no banco, então a
+segunda chegada é ignorada em vez de duplicar a conversa.
+
+Quando o processamento falha, o painel devolve erro de propósito: assim a Meta
+reenvia depois e a mensagem não se perde por uma falha momentânea do banco.
+
+### O interesse agora pode ficar em branco
+
+Quem escreve no WhatsApp ainda não disse o que quer. Chutar "aluguel" para todo
+mundo sujaria o relatório de interesses, que é justamente um dos que você usa
+para decidir.
+
+O campo passou a ser opcional. No kanban, o card mostra **interesse a definir**
+em laranja, e a atendente preenche na primeira conversa.
+
+### Tipos de mensagem
+
+Texto entra como está. Imagem, áudio, vídeo, documento, figurinha, localização e
+contato entram identificados, como `[imagem]`, para a atendente saber que chegou
+algo e abrir no WhatsApp. Receber o arquivo em si vem depois.
+
 ## v0.7.0 - HTTPS no domínio
 
 O painel sai do endereço de IP e passa a atender em

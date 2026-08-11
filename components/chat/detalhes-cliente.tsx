@@ -93,7 +93,12 @@ export const DetalhesCliente = ({ cliente, atendimento }: Props) => {
         </p>
         <Linha rotulo="Origem do lead" valor={ORIGENS[atendimento.origem]} />
         <Linha rotulo="Canal" valor={CANAIS[atendimento.canal].nome} />
-        <Linha rotulo="Interesse" valor={NECESSIDADES[atendimento.necessidade]} />
+        <Linha
+          rotulo="Interesse"
+          valor={
+            atendimento.necessidade ? NECESSIDADES[atendimento.necessidade] : 'a definir'
+          }
+        />
         {atendimento.ocasiao && <Linha rotulo="Ocasião" valor={OCASIOES[atendimento.ocasiao]} />}
         {atendimento.dataEvento && dias !== undefined && (
           <div className="flex items-baseline justify-between gap-3 px-4 py-1.5">

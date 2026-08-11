@@ -75,7 +75,7 @@ export const montarComercial = async (periodo: Periodo): Promise<RelatorioComerc
 
   const simples = atendimentos.map((a) => ({
     etapa: a.etapa,
-    necessidade: a.necessidade,
+    necessidade: a.necessidade ?? undefined,
     ocasiao: a.ocasiao ?? undefined,
     origem: a.origem,
     motivoPerda: a.motivoPerda ?? undefined,

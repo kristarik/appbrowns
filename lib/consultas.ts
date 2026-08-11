@@ -30,7 +30,7 @@ export const listarAtendimentos = async (): Promise<Atendimento[]> => {
     clienteId: r.clienteId,
     origem: r.origem,
     canal: r.canal,
-    necessidade: r.necessidade,
+    necessidade: r.necessidade ?? undefined,
     ocasiao: r.ocasiao ?? undefined,
     dataEvento: iso(r.dataEvento),
     interesseInicial: r.interesseInicial ?? undefined,

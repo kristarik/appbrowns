@@ -68,7 +68,11 @@ export const Cartao = ({
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-medium text-texto">{clienteNome}</p>
           <p className="truncate text-[11px] text-texto-fraco">
-            {NECESSIDADES[atendimento.necessidade]}
+            {atendimento.necessidade ? (
+              NECESSIDADES[atendimento.necessidade]
+            ) : (
+              <span className="text-alerta">interesse a definir</span>
+            )}
             {atendimento.ocasiao && ` · ${OCASIOES[atendimento.ocasiao]}`}
           </p>
         </div>

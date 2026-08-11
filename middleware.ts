@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 // A rota de sincronização não tem sessão porque quem chama é o agendamento do
 // servidor. Ela se protege sozinha, conferindo a chave no cabeçalho.
-const PUBLICAS = ['/login', '/api/sincronizar'];
+// A rota de sincronização e o webhook do WhatsApp não têm sessão: quem chama é
+// o agendamento do servidor e a Meta. Cada uma se protege sozinha, por chave e
+// por assinatura.
+const PUBLICAS = ['/login', '/api/sincronizar', '/api/whatsapp'];
 
 // Checagem barata: so confirma que existe um cookie de sessao, sem validar a
 // assinatura, porque o middleware roda no runtime edge e verificar o JWT aqui
